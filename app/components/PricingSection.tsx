@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Check } from "lucide-react";
 
 export default function PricingSection() {
@@ -46,24 +46,25 @@ export default function PricingSection() {
     },
   ];
 
-  const containerVariants = {
+  // 👇 Tuple cubic-bezier typé pour éviter l'erreur `number[] is not assignable to Easing`
+  const easeBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-      },
+      transition: { staggerChildren: 0.15 },
     },
   };
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1],
+        ease: easeBezier, // ✅ tuple typé
       },
     },
   };

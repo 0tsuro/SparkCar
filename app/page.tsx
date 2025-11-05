@@ -177,7 +177,7 @@ export default function HomePage() {
             <motion.a
               key={link.href}
               href={link.href}
-              onClick={handleNavClick}
+              onClick={(e) => handleNavClick(e, link.href)}
               initial={{ opacity: 0, y: 20 }}
               animate={{
                 opacity: isMobileMenuOpen ? 1 : 0,
@@ -191,7 +191,7 @@ export default function HomePage() {
           ))}
           <motion.a
             href="#reservation"
-            onClick={handleNavClick}
+            onClick={(e) => handleNavClick(e, "#reservation")}
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: isMobileMenuOpen ? 1 : 0,

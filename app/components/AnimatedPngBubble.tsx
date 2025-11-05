@@ -6,6 +6,7 @@ import {
   useReducedMotion,
   useScroll,
   useTransform,
+  type Transition, // 👈 importe le type
 } from "framer-motion";
 import { useMemo } from "react";
 
@@ -39,7 +40,7 @@ export default function AnimatedPngBubble({
   const x = useTransform(scrollYProgress, [0, 1], [0, -parallax * 90]);
   const y = useTransform(scrollYProgress, [0, 1], [0, parallax * 60]);
 
-  // Memoize amplitudes for performance
+  // Memoize amplitudes
   const amplitudes = useMemo(
     () => ({
       y: 16 * intensity,
@@ -68,15 +69,16 @@ export default function AnimatedPngBubble({
     [prefersReducedMotion, amplitudes]
   );
 
-  const transition = useMemo(
+  // ✅ Typage explicite + tuple pour ease
+  const transition: Transition = useMemo(
     () =>
       prefersReducedMotion
         ? { duration: 0 }
         : {
             duration: floatDuration,
-            ease: "easeInOut",
+            ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
             repeat: Infinity,
-            repeatType: "mirror" as const,
+            repeatType: "mirror",
             delay: phase,
           },
     [prefersReducedMotion, floatDuration, phase]
@@ -125,7 +127,7 @@ export default function AnimatedPngBubble({
             transition={{
               duration: floatDuration * 1.3,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
               delay: phase * 0.6,
             }}
           />
@@ -146,7 +148,7 @@ export default function AnimatedPngBubble({
             transition={{
               duration: floatDuration * 0.8,
               repeat: Infinity,
-              ease: "easeInOut",
+              ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
               delay: phase,
             }}
           />
