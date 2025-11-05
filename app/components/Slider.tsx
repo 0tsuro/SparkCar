@@ -279,7 +279,7 @@ export const Slider = () => {
               <button
                 key={i}
                 onClick={() => changeSlide(i, i > currentIndex ? 1 : -1)}
-                aria-label={`Aller à l'image ${i + 1}`}
+                aria-label={`Aller à l&aposimage ${i + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   i === currentIndex
                     ? "bg-blue-600 w-8 h-3"
