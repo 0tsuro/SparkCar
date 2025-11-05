@@ -188,7 +188,7 @@ export default function ContactSection() {
                 <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <div>
                   <p className="font-semibold text-gray-900">
-                    Zone d'intervention
+                    Zone d&aposintervention
                   </p>
                   <p className="text-gray-600">
                     Saint-Omer et alentours (30km)
