@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,8 +19,11 @@ export const Slider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
+  // ✅ Ref du conteneur (pour calculer correctement la position en mobile/desktop)
+  const sliderRef = useRef<HTMLDivElement | null>(null);
+
   const slides: SliderPair[] = [
-        {
+    {
       before: "/cleanmerco1.svg",
       after: "/cleanmerco2.svg",
       title: "Mercedes GLC",
@@ -31,7 +34,6 @@ export const Slider = () => {
         "Désinfection des surfaces à la vapeur",
       ],
     },
-
     {
       before: "/cleanporsche1.svg",
       after: "/cleanporsche2.svg",
@@ -43,7 +45,7 @@ export const Slider = () => {
         "Traitement céramique déperlant (3 mois)",
       ],
     },
-        {
+    {
       before: "/cleancoffre1.svg",
       after: "/cleancoffre2.svg",
       title: "Mercedes GLC",
@@ -55,73 +57,72 @@ export const Slider = () => {
       ],
     },
   ];
-  
 
   const current = slides[currentIndex];
 
-  // Handle mouse/touch movement
-  const handleMove = useCallback(
-    (clientX: number, rect: DOMRect) => {
-      if (!isDragging) return;
-      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-      const percent = Math.max(0, Math.min((x / rect.width) * 100, 100));
-      setSliderPosition(percent);
-    },
-    [isDragging]
-  );
+  // ✅ Convertit un clientX en % dans le conteneur
+  const updateFromClientX = useCallback((clientX: number) => {
+    const el = sliderRef.current;
+    if (!el) return;
 
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    handleMove(event.clientX, rect);
-  };
+    const rect = el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const percent = Math.max(0, Math.min((x / rect.width) * 100, 100));
+    setSliderPosition(percent);
+  }, []);
 
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    handleMove(event.touches[0].clientX, rect);
-  };
-
-  const handleMouseDown = () => setIsDragging(true);
-  const handleMouseUp = () => setIsDragging(false);
-
-  // Navigation functions
+  // ✅ Navigation
   const changeSlide = useCallback((newIndex: number, dir: number) => {
     setDirection(dir);
     setSliderPosition(50);
     setCurrentIndex(newIndex);
   }, []);
 
-const prevSlide = useCallback(() => {
-  const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
-  changeSlide(newIndex, -1);
-}, [currentIndex, slides.length, changeSlide]);
+  const prevSlide = useCallback(() => {
+    const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
+    changeSlide(newIndex, -1);
+  }, [currentIndex, slides.length, changeSlide]);
 
-const nextSlide = useCallback(() => {
-  const newIndex = currentIndex === slides.length - 1 ? 0 : currentIndex + 1;
-  changeSlide(newIndex, 1);
-}, [currentIndex, slides.length, changeSlide]);
+  const nextSlide = useCallback(() => {
+    const newIndex = currentIndex === slides.length - 1 ? 0 : currentIndex + 1;
+    changeSlide(newIndex, 1);
+  }, [currentIndex, slides.length, changeSlide]);
 
-
-  // Keyboard navigation
-useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "ArrowLeft") prevSlide();
-    if (e.key === "ArrowRight") nextSlide();
+  // ✅ Pointer Events = mobile + desktop (fix du slider sur téléphone)
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    updateFromClientX(e.clientX);
   };
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
-}, [prevSlide, nextSlide]);
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    updateFromClientX(e.clientX);
+  };
 
+  const onPointerUp = () => {
+    setIsDragging(false);
+  };
 
-  // Auto-play (optional)
-useEffect(() => {
-  const interval = setInterval(() => {
-    if (!isDragging) nextSlide();
-  }, 8000);
+  // ✅ Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+    };
 
-  return () => clearInterval(interval);
-}, [nextSlide, isDragging]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [prevSlide, nextSlide]);
 
+  // ✅ Auto-play
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isDragging) nextSlide();
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [nextSlide, isDragging]);
 
   // Framer Motion variants
   const slideVariants = {
@@ -129,10 +130,7 @@ useEffect(() => {
       x: direction > 0 ? 1000 : -1000,
       opacity: 0,
     }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
+    center: { x: 0, opacity: 1 },
     exit: (direction: number) => ({
       x: direction < 0 ? 1000 : -1000,
       opacity: 0,
@@ -149,12 +147,10 @@ useEffect(() => {
     <section className="relative w-full flex flex-col items-center justify-center px-4 md:px-8 lg:px-12 py-16 md:py-24 bg-gradient-to-br from-blue-50 via-white to-indigo-50 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Gradient Orbs */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-1/2 -right-32 w-[500px] h-[500px] bg-indigo-200/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl" />
 
-        {/* Dotted Pattern */}
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -185,17 +181,19 @@ useEffect(() => {
       <div className="relative z-10 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
         {/* Slider Container */}
         <motion.div
+          ref={sliderRef}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
           className="relative w-full lg:flex-1 aspect-[16/10] lg:aspect-[16/9] max-w-4xl rounded-3xl border-2 border-blue-800 shadow-2xl overflow-hidden bg-gray-900"
-          onMouseMove={handleMouseMove}
-          onTouchMove={handleTouchMove}
-          onMouseDown={handleMouseDown}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchEnd={handleMouseUp}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          onPointerLeave={onPointerUp}
+          // ✅ clé mobile: empêche le scroll de la page pendant le drag
+          style={{ touchAction: "none" }}
         >
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
@@ -208,7 +206,7 @@ useEffect(() => {
               transition={{ duration: 0.5, ease: "easeInOut" }}
               className="absolute inset-0"
             >
-              {/* After Image (Background) */}
+              {/* After Image */}
               <Image
                 alt={`${current.title} après lavage`}
                 fill
@@ -267,6 +265,7 @@ useEffect(() => {
             >
               <ChevronLeft className="w-5 h-5 md:w-7 md:h-7" />
             </motion.button>
+
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -343,16 +342,15 @@ useEffect(() => {
                 ))}
               </ul>
 
-              {/* CTA Button */}
-<motion.a
-  href="#contact"
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  className="w-full px-14 cursor-pointer bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl text-center"
->
-  Estimer mon tarif
-</motion.a>
-
+              {/* CTA Link */}
+              <motion.a
+                href="#contact"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full cursor-pointer mt-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl text-center"
+              >
+                Estimer mon tarif
+              </motion.a>
             </motion.div>
           </AnimatePresence>
         </motion.div>
