@@ -10,6 +10,7 @@ import ReservationForm from "./components/ReservationForm";
 import PricingSection from "./components/PricingSection";
 import Footer from "./components/Footer";
 import AnimatedPngBubble from "./components/AnimatedPngBubble";
+import AboutSection from "./components/AboutSection";
 
 export default function HomePage() {
   const { scrollYProgress } = useScroll();
@@ -19,7 +20,7 @@ export default function HomePage() {
   const smoothScrollTo = useSmoothScroll();
 
   // Parallax effect for car
-  const carX = useTransform(scrollYProgress, [0, 0.3], [0, -400]);
+  const carX = useTransform(scrollYProgress, [0, 0.3], [0, -3000]);
   const carY = useTransform(scrollYProgress, [0, 0.3], [0, 100]);
 
   // Hero text animations
@@ -72,6 +73,7 @@ export default function HomePage() {
   const navLinks = [
     { href: "#accueil", label: "Accueil" },
     { href: "#services", label: "Services" },
+    { href: "#nosformules", label: "Formules" },
     { href: "#a-propos", label: "À propos" },
     { href: "#contact", label: "Contact" },
   ];
@@ -96,7 +98,7 @@ export default function HomePage() {
         >
           <Image
             src="/logo.png"
-            alt="Spark&aposCar Logo"
+            alt="Spark'Car Logo"
             width={150}
             height={150}
             className="w-32 lg:w-36 h-auto"
@@ -211,6 +213,21 @@ export default function HomePage() {
         id="accueil"
         className="relative h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white overflow-hidden text-center px-6 pt-20"
       >
+        <div className="absolute top-50 left-0 z-0 pointer-events-none">
+          <div className="flex flex-col gap-4">
+            <div
+              className="h-2 w-128 md:w-128 rounded-full
+                 bg-gradient-to-r from-[#010D50] to-[#0328EE]
+                 origin-left rotate-[-30deg]"
+            />
+            <div
+              className="h-2 w-80 md:w-[600px] rounded-full
+                 bg-gradient-to-r from-[#010D50] to-[#0328EE]
+                 origin-left rotate-[-30deg]"
+            />
+          </div>
+        </div>
+
         {/* Animated Bubbles */}
         <AnimatedPngBubble
           src="/bubble.png"
@@ -264,8 +281,8 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Un lavage simple, efficace et sans artifices : l&aposattention
-            qu&aposil faut pour que votre auto brille à nouveau.
+            Un lavage simple, efficace et sans artifices : l'attention
+            qu'il faut pour que votre auto brille à nouveau.
           </motion.p>
 
           <motion.div
@@ -345,14 +362,18 @@ export default function HomePage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="a-propos">
+      <section id="nosformules">
         <PricingSection />
+      </section>
+
+      <section id="a-propos" className="w-full">
+        <AboutSection />
       </section>
 
       {/* Reservation Section */}
       <section
         id="reservation"
-        className="min-h-screen flex items-center justify-center bg-white py-20"
+        className="min-h-screen flex items-center justify-center bg-white"
       >
         <ReservationForm />
       </section>

@@ -14,6 +14,8 @@ import { motion } from "framer-motion";
 
 export default function ContactSection() {
   const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [rgpdAccepted, setRgpdAccepted] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -35,6 +37,10 @@ export default function ContactSection() {
       newErrors.message = "Le message doit contenir au moins 10 caractères";
     }
 
+    if (!rgpdAccepted) {
+      newErrors.rgpd = "Vous devez accepter la politique de confidentialité";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -46,26 +52,48 @@ export default function ContactSection() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    console.log("Demande envoyée :", form);
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      const data = await res.json().catch(() => ({}));
 
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setForm({ name: "", phone: "", message: "" });
-      setIsSubmitted(false);
-    }, 3000);
+      if (!res.ok) {
+        setErrors((prev) => ({
+          ...prev,
+          message: data?.error || "Une erreur est survenue. Réessayez.",
+        }));
+        return;
+      }
+
+      setIsSubmitted(true);
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setForm({ name: "", phone: "", message: "" });
+        setRgpdAccepted(false);
+        setIsSubmitted(false);
+        setErrors({});
+      }, 3000);
+    } catch {
+      setErrors((prev) => ({
+        ...prev,
+        message: "Impossible d’envoyer le message. Vérifiez votre connexion.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
     {
       icon: Phone,
       label: "Téléphone",
-      value: "06 11 22 33 44",
-      href: "tel:+33611223344",
+      value: "06 48 34 97 52",
+      href: "tel:+336648349752",
       color: "text-blue-600",
       bgColor: "bg-blue-50",
       hoverColor: "hover:bg-blue-100",
@@ -74,7 +102,7 @@ export default function ContactSection() {
       icon: MessageCircle,
       label: "WhatsApp",
       value: "Message direct",
-      href: "https://wa.me/33611223344",
+      href: "https://wa.me/message/TR4UNNZWW42PC1",
       color: "text-green-600",
       bgColor: "bg-green-50",
       hoverColor: "hover:bg-green-100",
@@ -83,8 +111,8 @@ export default function ContactSection() {
     {
       icon: Mail,
       label: "Email",
-      value: "contact@sparkcar.fr",
-      href: "mailto:contact@sparkcar.fr",
+      value: "sparkcar.contact@gmail.com",
+      href: "mailto:sparkcar.contact@gmail.com",
       color: "text-purple-600",
       bgColor: "bg-purple-50",
       hoverColor: "hover:bg-purple-100",
@@ -94,7 +122,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="relative w-full bg-gradient-to-b from-white to-gray-50 py-20 md:py-28 px-6 overflow-hidden"
+      className="relative w-full bg-gradient-to-b from-white to-gray-50 md:py-28 px-6 overflow-hidden"
     >
       {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -112,10 +140,10 @@ export default function ContactSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4">
-            Prenez <span className="text-blue-700">contact</span> avec nous
+            Prenez <span className="text-blue-700">contact</span> avec moi
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Nous sommes à votre écoute pour répondre à toutes vos questions et
+            Je suis à votre écoute pour répondre à toutes vos questions et
             réserver votre prestation
           </p>
         </motion.div>
@@ -134,7 +162,7 @@ export default function ContactSection() {
                 Service à domicile
               </h3>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Nous venons laver votre véhicule directement à votre domicile ou
+                Je viens laver votre véhicule directement à votre domicile ou
                 sur votre lieu de travail. Réponse rapide garantie sous 2 heures
                 !
               </p>
@@ -154,7 +182,7 @@ export default function ContactSection() {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
                     whileHover={{ x: 8 }}
-                    className={`flex items-center gap-4 p-4 rounded-xl ${contact.bgColor} ${contact.hoverColor} transition-all group`}
+                    className={`flex items-center gap-4 p-4 rounded-xl ${contact.bgColor} ${contact.hoverColor} transition-all group cursor-pointer`}
                   >
                     <div
                       className={`${contact.color} p-3 bg-white rounded-lg shadow-sm group-hover:scale-110 transition-transform`}
@@ -188,7 +216,7 @@ export default function ContactSection() {
                 <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <div>
                   <p className="font-semibold text-gray-900">
-                    Zone d&aposintervention
+                    Zone d&apos;intervention
                   </p>
                   <p className="text-gray-600">
                     Saint-Omer et alentours (30km)
@@ -199,10 +227,7 @@ export default function ContactSection() {
                 <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <div>
                   <p className="font-semibold text-gray-900">Horaires</p>
-                  <p className="text-gray-600">Lundi – Samedi : 8h00 – 19h00</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Dimanche sur rendez-vous
-                  </p>
+                  <p className="text-gray-600">Sur rendez-vous</p>
                 </div>
               </div>
             </motion.div>
@@ -237,7 +262,7 @@ export default function ContactSection() {
                     Message envoyé !
                   </h4>
                   <p className="text-gray-600">
-                    Nous vous répondrons très rapidement
+                    Je vous répondrai très rapidement
                   </p>
                 </motion.div>
               )}
@@ -247,7 +272,7 @@ export default function ContactSection() {
                   Demande de réservation
                 </h3>
                 <p className="text-gray-600">
-                  Remplissez le formulaire et nous vous recontacterons
+                  Remplissez le formulaire et je vous recontacterai
                 </p>
               </div>
 
@@ -329,13 +354,48 @@ export default function ContactSection() {
                 )}
               </div>
 
+              {/* RGPD */}
+              <div className="space-y-1">
+                <label className="flex items-start gap-3 text-sm text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rgpdAccepted}
+                    onChange={(e) => {
+                      setRgpdAccepted(e.target.checked);
+                      setErrors({ ...errors, rgpd: "" });
+                    }}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    required
+                  />
+                  <span className="leading-relaxed">
+                    J’accepte que mes données soient utilisées uniquement dans le
+                    cadre de ma demande de contact, conformément à la{" "}
+                    <a
+                      href="/politique-de-confidentialite"
+                      target="_blank"
+                      className="text-blue-600 underline hover:text-blue-700"
+                      rel="noreferrer"
+                    >
+                      politique de confidentialité
+                    </a>
+                    .
+                  </span>
+                </label>
+
+                {errors.rgpd && (
+                  <p className="text-red-500 text-sm mt-1">{errors.rgpd}</p>
+                )}
+              </div>
+
               <motion.button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !rgpdAccepted}
                 whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                 whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-                className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 text-lg font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
-                  isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 text-lg font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
+                  isSubmitting || !rgpdAccepted
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:from-blue-700 hover:to-blue-800"
                 }`}
               >
                 {isSubmitting ? (

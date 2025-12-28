@@ -20,42 +20,42 @@ export const Slider = () => {
   const [direction, setDirection] = useState(0);
 
   const slides: SliderPair[] = [
-    {
-      before: "/test1.png",
-      after: "/test2.png",
-      title: "Audi RS3",
-      formula: "Formule Prestige",
-      details: [
-        "Polissage complet en 2 phases",
-        "Application de cire céramique haute protection",
-        "Nettoyage intérieur professionnel",
-        "Traitement des plastiques et cuirs",
-      ],
-    },
-    {
-      before: "/car_dirty.jpg",
-      after: "/car_clean.jpg",
-      title: "BMW M4",
+        {
+      before: "/cleanmerco1.svg",
+      after: "/cleanmerco2.svg",
+      title: "Mercedes GLC",
       formula: "Formule Premium",
       details: [
-        "Lustrage carrosserie miroir",
-        "Protection hydrophobe longue durée",
-        "Rénovation complète des jantes",
-        "Décontamination de la peinture",
+        "Shampoing des tapis, moquettes, sièges et tissus",
+        "Protection UV des plastiques intérieurs",
+        "Désinfection des surfaces à la vapeur",
       ],
     },
+
     {
-      before: "/house_old.jpg",
-      after: "/house_new.jpg",
-      title: "Mercedes A45 AMG",
-      formula: "Formule Express",
+      before: "/cleanporsche1.svg",
+      after: "/cleanporsche2.svg",
+      title: "Porsche 987",
+      formula: "Formule Extérieur",
       details: [
-        "Nettoyage extérieur haute pression",
-        "Brillance express sans traces",
-        "Lustrage rapide de la carrosserie",
+        "Prélavage à la mousse active",
+        "Lavage manuel de la carrosserie",
+        "Traitement céramique déperlant (3 mois)",
+      ],
+    },
+        {
+      before: "/cleancoffre1.svg",
+      after: "/cleancoffre2.svg",
+      title: "Mercedes GLC",
+      formula: "Formule Deluxe",
+      details: [
+        "Désinfection des surfaces à la vapeur",
+        "Shampoing intégral des sièges et tissus",
+        "Nettoyage des contours de portes et du coffre",
       ],
     },
   ];
+  
 
   const current = slides[currentIndex];
 
@@ -258,7 +258,7 @@ export const Slider = () => {
               whileTap={{ scale: 0.9 }}
               onClick={prevSlide}
               aria-label="Image précédente"
-              className="pointer-events-auto bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
+              className="pointer-events-auto cursor-pointer bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
             >
               <ChevronLeft className="w-5 h-5 md:w-7 md:h-7" />
             </motion.button>
@@ -267,7 +267,7 @@ export const Slider = () => {
               whileTap={{ scale: 0.9 }}
               onClick={nextSlide}
               aria-label="Image suivante"
-              className="pointer-events-auto bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
+              className="pointer-events-auto cursor-pointer bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
             >
               <ChevronRight className="w-5 h-5 md:w-7 md:h-7" />
             </motion.button>
@@ -279,7 +279,7 @@ export const Slider = () => {
               <button
                 key={i}
                 onClick={() => changeSlide(i, i > currentIndex ? 1 : -1)}
-                aria-label={`Aller à l&aposimage ${i + 1}`}
+                aria-label={`Aller à l'image ${i + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   i === currentIndex
                     ? "bg-blue-600 w-8 h-3"
@@ -339,13 +339,15 @@ export const Slider = () => {
               </ul>
 
               {/* CTA Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl"
-              >
-                Choisir cette formule
-              </motion.button>
+<motion.a
+  href="#contact"
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  className="w-full px-14 cursor-pointer bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl text-center"
+>
+  Estimer mon tarif
+</motion.a>
+
             </motion.div>
           </AnimatePresence>
         </motion.div>

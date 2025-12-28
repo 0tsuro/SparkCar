@@ -9,6 +9,7 @@ import {
   Linkedin,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -35,7 +36,7 @@ export default function Footer() {
             variants={fadeInUp}
           >
             <h3 className="text-3xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              Spark&aposCar
+              Spark'Car
             </h3>
             <p className="text-sm leading-relaxed text-gray-400 max-w-xs mb-6">
               Spécialiste du detailing automobile haut de gamme. Entretien
@@ -46,21 +47,21 @@ export default function Footer() {
             {/* Réseaux sociaux */}
             <div className="flex gap-4">
               <a
-                href="#"
+                href="#https://www.facebook.com/SparkCarAutoMoto"
                 aria-label="Facebook"
                 className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-600 flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="#https://www.instagram.com/sparkcar62/"
                 aria-label="Instagram"
                 className="w-10 h-10 rounded-full bg-gray-800 hover:bg-pink-600 flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="#https://www.linkedin.com/in/pierre-clipet-5700b32b1/"
                 aria-label="LinkedIn"
                 className="w-10 h-10 rounded-full bg-gray-800 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
@@ -101,7 +102,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#a-propos"
+                  href="#nosformules"
                   className="hover:text-blue-400 transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full group-hover:w-3 transition-all" />
@@ -110,7 +111,16 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#reservation"
+                  href="#a-propos"
+                  className="hover:text-blue-400 transition-colors inline-flex items-center gap-2 group"
+                >
+                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full group-hover:w-3 transition-all" />
+                  À propos
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#contact"
                   className="hover:text-blue-400 transition-colors inline-flex items-center gap-2 group"
                 >
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full group-hover:w-3 transition-all" />
@@ -148,20 +158,20 @@ export default function Footer() {
                     href="tel:+33612345678"
                     className="hover:text-blue-400 transition-colors block"
                   >
-                    06 12 34 56 78
+                    06 48 34 97 52
                   </a>
                   <span className="text-xs text-gray-500">
-                    Lun - Sam: 8h - 19h
+                    Lun - Dim: 8h - 19h
                   </span>
                 </div>
               </li>
               <li className="flex items-start gap-3 group">
                 <Mail className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                 <a
-                  href="mailto:contact@sparkcar.fr"
+                  href="mailto:sparkcar.contact@gmail.com"
                   className="hover:text-blue-400 transition-colors"
                 >
-                  contact@sparkcar.fr
+                  sparkcar.contact@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3 group">
@@ -178,18 +188,25 @@ export default function Footer() {
         {/* === Barre de séparation === */}
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {currentYear} Spark&aposCar. Tous droits réservés.</p>
+            <p>© {currentYear} Spark'Car. Tous droits réservés.</p>
             <p className="flex items-center gap-2">
               Site développé par{" "}
               <span className="text-blue-400 font-semibold">Nathan Chaput</span>
             </p>
             <div className="flex gap-6 text-xs">
-              <a href="#" className="hover:text-blue-400 transition-colors">
-                Mentions légales
-              </a>
-              <a href="#" className="hover:text-blue-400 transition-colors">
+              <Link
+                href="/legal/mentions-legales"
+                className="hover:text-blue-400 transition-colors"
+                >Mentions légales</Link>
+              <Link href="/legal/cgv" className="hover:text-blue-400 transition-colors">
                 CGV
-              </a>
+              </Link>  
+              <Link
+                href="/legal/politique-de-confidentialite"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Politique de confidentialité
+              </Link>
             </div>
           </div>
         </div>
