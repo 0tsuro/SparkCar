@@ -90,33 +90,38 @@ export const Slider = () => {
     setCurrentIndex(newIndex);
   }, []);
 
-  const prevSlide = () => {
-    const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
-    changeSlide(newIndex, -1);
-  };
+const prevSlide = useCallback(() => {
+  const newIndex = currentIndex === 0 ? slides.length - 1 : currentIndex - 1;
+  changeSlide(newIndex, -1);
+}, [currentIndex, slides.length, changeSlide]);
 
-  const nextSlide = () => {
-    const newIndex = currentIndex === slides.length - 1 ? 0 : currentIndex + 1;
-    changeSlide(newIndex, 1);
-  };
+const nextSlide = useCallback(() => {
+  const newIndex = currentIndex === slides.length - 1 ? 0 : currentIndex + 1;
+  changeSlide(newIndex, 1);
+}, [currentIndex, slides.length, changeSlide]);
+
 
   // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") prevSlide();
-      if (e.key === "ArrowRight") nextSlide();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentIndex]);
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "ArrowLeft") prevSlide();
+    if (e.key === "ArrowRight") nextSlide();
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [prevSlide, nextSlide]);
+
 
   // Auto-play (optional)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isDragging) nextSlide();
-    }, 8000);
-    return () => clearInterval(interval);
-  }, [currentIndex, isDragging]);
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (!isDragging) nextSlide();
+  }, 8000);
+
+  return () => clearInterval(interval);
+}, [nextSlide, isDragging]);
+
 
   // Framer Motion variants
   const slideVariants = {
@@ -279,7 +284,7 @@ export const Slider = () => {
               <button
                 key={i}
                 onClick={() => changeSlide(i, i > currentIndex ? 1 : -1)}
-                aria-label={`Aller à l'image ${i + 1}`}
+                aria-label={`Aller à l’image ${i + 1}`}
                 className={`transition-all duration-300 rounded-full ${
                   i === currentIndex
                     ? "bg-blue-600 w-8 h-3"

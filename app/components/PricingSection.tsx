@@ -44,7 +44,7 @@ export default function PricingSection() {
     },
   ];
 
-  // Tuple cubic-bezier typé pour éviter l'erreur TS
+  // Tuple cubic-bezier typé pour éviter l’erreur TS
   const easeBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
   const containerVariants: Variants = {
@@ -296,7 +296,7 @@ export default function PricingSection() {
         transition={{ delay: 0.5 }}
         className="text-gray-500 text-sm mt-12 text-center max-w-2xl"
       >
-        * Tarifs indicatifs selon la taille et l'état du véhicule. Devis
+        * Tarifs indicatifs selon la taille et l’état du véhicule. Devis
         personnalisé disponible sur demande.
       </motion.p>
     </section>

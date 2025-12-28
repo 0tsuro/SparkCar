@@ -36,13 +36,13 @@ export default function Footer() {
             variants={fadeInUp}
           >
             <h3 className="text-3xl font-bold text-white mb-4 bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              Spark'Car
+              Spark’Car
             </h3>
-            <p className="text-sm leading-relaxed text-gray-400 max-w-xs mb-6">
-              Spécialiste du detailing automobile haut de gamme. Entretien
-              complet intérieur et extérieur pour redonner tout son éclat à
-              votre véhicule.
-            </p>
+<p className="text-sm leading-relaxed text-gray-400 max-w-xs mb-6">
+  Spécialiste du detailing automobile haut de gamme. Entretien complet
+  intérieur et extérieur pour redonner tout son éclat à votre véhicule.
+</p>
+
 
             {/* Réseaux sociaux */}
             <div className="flex gap-4">
@@ -188,7 +188,7 @@ export default function Footer() {
         {/* === Barre de séparation === */}
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {currentYear} Spark'Car. Tous droits réservés.</p>
+            <p>© {currentYear} Spark’Car. Tous droits réservés.</p>
             <p className="flex items-center gap-2">
               Site développé par{" "}
               <span className="text-blue-400 font-semibold">Nathan Chaput</span>

@@ -98,7 +98,7 @@ export default function HomePage() {
         >
           <Image
             src="/logo.png"
-            alt="Spark'Car Logo"
+            alt="Spark’Car Logo"
             width={150}
             height={150}
             className="w-32 lg:w-36 h-auto"
@@ -281,8 +281,8 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Un lavage simple, efficace et sans artifices : l'attention
-            qu'il faut pour que votre auto brille à nouveau.
+            Un lavage simple, efficace et sans artifices : l’attention
+            qu’il faut pour que votre auto brille à nouveau.
           </motion.p>
 
           <motion.div
