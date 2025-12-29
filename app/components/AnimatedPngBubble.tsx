@@ -4,14 +4,15 @@ import Image from "next/image";
 import {
   motion,
   useReducedMotion,
-  useScroll,
   useTransform,
-  type Transition, // 👈 importe le type
+  type MotionValue,
+  type Transition,
 } from "framer-motion";
 import { useMemo } from "react";
 
 type Props = {
   src: string;
+  scrollYProgress: MotionValue<number>;
   size?: number;
   positionClass?: string;
   opacity?: number;
@@ -24,6 +25,7 @@ type Props = {
 
 export default function AnimatedPngBubble({
   src,
+  scrollYProgress,
   size = 420,
   positionClass = "top-10 right-10",
   opacity = 0.8,
@@ -34,122 +36,68 @@ export default function AnimatedPngBubble({
   glow = true,
 }: Props) {
   const prefersReducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll();
 
-  // Parallax transforms
+  // Parallax only affects transforms (cheap)
   const x = useTransform(scrollYProgress, [0, 1], [0, -parallax * 90]);
   const y = useTransform(scrollYProgress, [0, 1], [0, parallax * 60]);
 
-  // Memoize amplitudes
-  const amplitudes = useMemo(
+  const amp = useMemo(
     () => ({
-      y: 16 * intensity,
-      rotation: 1.2 * intensity,
-      scale: 0.03 * intensity,
+      y: 10 * intensity,
+      r: 1.0 * intensity,
+      s: 0.02 * intensity,
     }),
     [intensity]
   );
 
-  // Animation variants
-  const animationStates = useMemo(
-    () =>
-      prefersReducedMotion
-        ? { scale: 1, rotate: 0, y: 0 }
-        : {
-            y: [0, -amplitudes.y, 0, amplitudes.y * 0.8, 0],
-            rotate: [
-              -amplitudes.rotation,
-              amplitudes.rotation * 1.4,
-              -amplitudes.rotation * 0.7,
-              amplitudes.rotation,
-              -amplitudes.rotation,
-            ],
-            scale: [1, 1 + amplitudes.scale, 1, 1 - amplitudes.scale * 0.7, 1],
-          },
-    [prefersReducedMotion, amplitudes]
-  );
+  const animate = useMemo(() => {
+    if (prefersReducedMotion) return { y: 0, rotate: 0, scale: 1 };
+    return {
+      y: [0, -amp.y, 0, amp.y * 0.7, 0],
+      rotate: [-amp.r, amp.r, -amp.r * 0.6, amp.r * 0.8, -amp.r],
+      scale: [1, 1 + amp.s, 1, 1 - amp.s * 0.7, 1],
+    };
+  }, [prefersReducedMotion, amp]);
 
-  // ✅ Typage explicite + tuple pour ease
-  const transition: Transition = useMemo(
-    () =>
-      prefersReducedMotion
-        ? { duration: 0 }
-        : {
-            duration: floatDuration,
-            ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
-            repeat: Infinity,
-            repeatType: "mirror",
-            delay: phase,
-          },
-    [prefersReducedMotion, floatDuration, phase]
-  );
+  const transition: Transition = useMemo(() => {
+    if (prefersReducedMotion) return { duration: 0 };
+    return {
+      duration: floatDuration,
+      ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
+      repeat: Infinity,
+      repeatType: "mirror",
+      delay: phase,
+    };
+  }, [prefersReducedMotion, floatDuration, phase]);
 
   return (
     <motion.div
       aria-hidden="true"
-      className={`pointer-events-none absolute ${positionClass} will-change-transform`}
-      style={{
-        x,
-        y,
-        opacity,
-        width: size,
-        height: size,
-      }}
-      initial={{ scale: 0.95, rotate: 0, y: 0 }}
-      animate={animationStates}
+      className={`pointer-events-none absolute ${positionClass} transform-gpu will-change-transform`}
+      style={{ x, y, opacity, width: size, height: size }}
+      initial={false}
+      animate={animate}
       transition={transition}
     >
       <div className="relative w-full h-full">
-        {/* Main bubble image */}
         <Image
           src={src}
           alt=""
           width={size}
           height={size}
-          priority
-          className={`w-full h-auto ${
-            glow ? "drop-shadow-[0_0_35px_rgba(120,170,255,0.4)]" : ""
-          }`}
+          loading="lazy"
+          className={`w-full h-auto ${glow ? "drop-shadow-[0_0_28px_rgba(120,170,255,0.32)]" : ""}`}
           style={{ objectFit: "contain" }}
         />
 
-        {/* Light reflection effect */}
-        {!prefersReducedMotion && (
-          <motion.div
-            className="absolute inset-0 rounded-full overflow-hidden"
+        {/* Very cheap static overlay (no animation) */}
+        {glow && (
+          <div
+            className="absolute inset-0 rounded-full pointer-events-none"
             style={{
               background:
-                "linear-gradient(75deg, rgba(255,255,255,0) 15%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0) 85%)",
+                "radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 35%, transparent 70%)",
               mixBlendMode: "screen",
-            }}
-            initial={{ x: "-120%" }}
-            animate={{ x: ["-120%", "140%"] }}
-            transition={{
-              duration: floatDuration * 1.3,
-              repeat: Infinity,
-              ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
-              delay: phase * 0.6,
-            }}
-          />
-        )}
-
-        {/* Additional subtle glow for depth */}
-        {glow && !prefersReducedMotion && (
-          <motion.div
-            className="absolute inset-0 rounded-full blur-2xl"
-            style={{
-              background:
-                "radial-gradient(circle, rgba(100,150,255,0.15) 0%, transparent 70%)",
-            }}
-            animate={{
-              scale: [1, 1.1, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{
-              duration: floatDuration * 0.8,
-              repeat: Infinity,
-              ease: [0.42, 0, 0.58, 1] as [number, number, number, number],
-              delay: phase,
             }}
           />
         )}

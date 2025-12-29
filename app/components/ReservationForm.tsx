@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Phone,
   MessageCircle,
@@ -12,130 +12,172 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+type FormState = {
+  name: string;
+  phone: string;
+  message: string;
+};
+
+type ErrorsState = Partial<Record<keyof FormState | "rgpd" | "submit", string>>;
+
+const PHONE_REGEX =
+  /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+
 export default function ContactSection() {
-  const [form, setForm] = useState({ name: "", phone: "", message: "" });
+  const [form, setForm] = useState<FormState>({ name: "", phone: "", message: "" });
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<ErrorsState>({});
 
-  // Validation
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+  const resetTimerRef = useRef<number | null>(null);
+
+  // Form validation
+  const validateForm = useCallback(() => {
+    const nextErrors: ErrorsState = {};
 
     if (form.name.trim().length < 2) {
-      newErrors.name = "Le nom doit contenir au moins 2 caractères";
+      nextErrors.name = "Le nom doit contenir au moins 2 caractères";
     }
 
-    const phoneRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
-    if (!phoneRegex.test(form.phone.replace(/\s/g, ""))) {
-      newErrors.phone = "Veuillez entrer un numéro de téléphone valide";
+    const normalizedPhone = form.phone.replace(/\s/g, "");
+    if (!PHONE_REGEX.test(normalizedPhone)) {
+      nextErrors.phone = "Veuillez entrer un numéro de téléphone valide";
     }
 
     if (form.message.trim().length < 10) {
-      newErrors.message = "Le message doit contenir au moins 10 caractères";
+      nextErrors.message = "Le message doit contenir au moins 10 caractères";
     }
 
     if (!rgpdAccepted) {
-      newErrors.rgpd = "Vous devez accepter la politique de confidentialité";
+      nextErrors.rgpd = "Vous devez accepter la politique de confidentialité";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }, [form, rgpdAccepted]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Field handlers
+  const onChangeField = useCallback(
+    (key: keyof FormState) => (value: string) => {
+      setForm((prev) => ({ ...prev, [key]: value }));
+      setErrors((prev) => ({ ...prev, [key]: undefined, submit: undefined }));
+    },
+    []
+  );
 
-    if (!validateForm()) return;
+  const onToggleRgpd = useCallback((checked: boolean) => {
+    setRgpdAccepted(checked);
+    setErrors((prev) => ({ ...prev, rgpd: undefined, submit: undefined }));
+  }, []);
 
-    setIsSubmitting(true);
+  // Submit handler
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (isSubmitting) return;
+      if (!validateForm()) return;
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      setIsSubmitting(true);
 
-      const data = await res.json().catch(() => ({}));
+      try {
+        const res = await fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        });
 
-      if (!res.ok) {
+        const data = await res.json().catch(() => ({} as any));
+
+        if (!res.ok) {
+          setErrors((prev) => ({
+            ...prev,
+            submit: data?.error || "Une erreur est survenue. Réessayez.",
+          }));
+          return;
+        }
+
+        setIsSubmitted(true);
+
+        // Reset UI after success
+        if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = window.setTimeout(() => {
+          setForm({ name: "", phone: "", message: "" });
+          setRgpdAccepted(false);
+          setIsSubmitted(false);
+          setErrors({});
+        }, 3000);
+      } catch {
         setErrors((prev) => ({
           ...prev,
-          message: data?.error || "Une erreur est survenue. Réessayez.",
+          submit: "Impossible d’envoyer le message. Vérifiez votre connexion.",
         }));
-        return;
+      } finally {
+        setIsSubmitting(false);
       }
-
-      setIsSubmitted(true);
-
-      // Reset form after 3 seconds
-      setTimeout(() => {
-        setForm({ name: "", phone: "", message: "" });
-        setRgpdAccepted(false);
-        setIsSubmitted(false);
-        setErrors({});
-      }, 3000);
-    } catch {
-      setErrors((prev) => ({
-        ...prev,
-        message: "Impossible d’envoyer le message. Vérifiez votre connexion.",
-      }));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const contactInfo = [
-    {
-      icon: Phone,
-      label: "Téléphone",
-      value: "06 48 34 97 52",
-      href: "tel:+336648349752",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      hoverColor: "hover:bg-blue-100",
     },
-    {
-      icon: MessageCircle,
-      label: "WhatsApp",
-      value: "Message direct",
-      href: "https://wa.me/message/TR4UNNZWW42PC1",
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      hoverColor: "hover:bg-green-100",
-      target: "_blank",
-    },
-    {
-      icon: Mail,
-      label: "Email",
-      value: "sparkcar.contact@gmail.com",
-      href: "mailto:sparkcar.contact@gmail.com",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      hoverColor: "hover:bg-purple-100",
-    },
-  ];
+    [form, isSubmitting, validateForm]
+  );
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) window.clearTimeout(resetTimerRef.current);
+    };
+  }, []);
+
+  const contactInfo = useMemo(
+    () => [
+      {
+        icon: Phone,
+        label: "Téléphone",
+        value: "06 48 34 97 52",
+        href: "tel:+33648349752",
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+        hoverColor: "hover:bg-blue-100",
+      },
+      {
+        icon: MessageCircle,
+        label: "WhatsApp",
+        value: "Message direct",
+        href: "https://wa.me/message/TR4UNNZWW42PC1",
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        hoverColor: "hover:bg-green-100",
+        target: "_blank" as const,
+      },
+      {
+        icon: Mail,
+        label: "Email",
+        value: "sparkcar.contact@gmail.com",
+        href: "mailto:sparkcar.contact@gmail.com",
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+        hoverColor: "hover:bg-purple-100",
+      },
+    ],
+    []
+  );
+
+  const isDisabled = isSubmitting || !rgpdAccepted;
 
   return (
     <section
       id="contact"
       className="relative w-full bg-gradient-to-b from-white to-gray-50 md:py-28 px-6 overflow-hidden"
     >
-      {/* Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-100/30 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
@@ -149,11 +191,10 @@ export default function ContactSection() {
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-          {/* Left Block - Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
             className="flex flex-col justify-center space-y-8"
           >
@@ -163,12 +204,10 @@ export default function ContactSection() {
               </h3>
               <p className="text-lg text-gray-600 leading-relaxed">
                 Je viens laver votre véhicule directement à votre domicile ou
-                sur votre lieu de travail. Réponse rapide garantie sous 2 heures
-                !
+                sur votre lieu de travail. Réponse rapide garantie sous 2 heures !
               </p>
             </div>
 
-            {/* Contact Methods */}
             <div className="space-y-4">
               {contactInfo.map((contact, index) => {
                 const Icon = contact.icon;
@@ -177,10 +216,11 @@ export default function ContactSection() {
                     key={contact.label}
                     href={contact.href}
                     target={contact.target}
+                    rel={contact.target ? "noopener noreferrer" : undefined}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
+                    viewport={{ once: true, amount: 0.6 }}
+                    transition={{ delay: index * 0.1, duration: 0.45 }}
                     whileHover={{ x: 8 }}
                     className={`flex items-center gap-4 p-4 rounded-xl ${contact.bgColor} ${contact.hoverColor} transition-all group cursor-pointer`}
                   >
@@ -204,12 +244,11 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* Additional Info */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
               className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 space-y-3"
             >
               <div className="flex items-start gap-3">
@@ -223,6 +262,7 @@ export default function ContactSection() {
                   </p>
                 </div>
               </div>
+
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <div>
@@ -233,18 +273,16 @@ export default function ContactSection() {
             </motion.div>
           </motion.div>
 
-          {/* Right Block - Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
           >
             <form
               onSubmit={handleSubmit}
               className="bg-white border border-gray-200 rounded-3xl shadow-xl p-8 md:p-10 space-y-6 relative overflow-hidden"
             >
-              {/* Success Overlay */}
               {isSubmitted && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -288,14 +326,13 @@ export default function ContactSection() {
                   id="name"
                   required
                   value={form.name}
-                  onChange={(e) => {
-                    setForm({ ...form, name: e.target.value });
-                    setErrors({ ...errors, name: "" });
-                  }}
+                  onChange={(e) => onChangeField("name")(e.target.value)}
                   className={`w-full border ${
                     errors.name ? "border-red-500" : "border-gray-300"
                   } rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 transition-all`}
                   placeholder="Martin Dupont"
+                  autoComplete="name"
+                  inputMode="text"
                 />
                 {errors.name && (
                   <p className="text-red-500 text-sm mt-1">{errors.name}</p>
@@ -314,14 +351,13 @@ export default function ContactSection() {
                   id="phone"
                   required
                   value={form.phone}
-                  onChange={(e) => {
-                    setForm({ ...form, phone: e.target.value });
-                    setErrors({ ...errors, phone: "" });
-                  }}
+                  onChange={(e) => onChangeField("phone")(e.target.value)}
                   className={`w-full border ${
                     errors.phone ? "border-red-500" : "border-gray-300"
                   } rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 transition-all`}
                   placeholder="06 12 34 56 78"
+                  autoComplete="tel"
+                  inputMode="tel"
                 />
                 {errors.phone && (
                   <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
@@ -340,10 +376,7 @@ export default function ContactSection() {
                   rows={5}
                   required
                   value={form.message}
-                  onChange={(e) => {
-                    setForm({ ...form, message: e.target.value });
-                    setErrors({ ...errors, message: "" });
-                  }}
+                  onChange={(e) => onChangeField("message")(e.target.value)}
                   className={`w-full border ${
                     errors.message ? "border-red-500" : "border-gray-300"
                   } rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 resize-none transition-all`}
@@ -354,27 +387,23 @@ export default function ContactSection() {
                 )}
               </div>
 
-              {/* RGPD */}
               <div className="space-y-1">
                 <label className="flex items-start gap-3 text-sm text-gray-600 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rgpdAccepted}
-                    onChange={(e) => {
-                      setRgpdAccepted(e.target.checked);
-                      setErrors({ ...errors, rgpd: "" });
-                    }}
+                    onChange={(e) => onToggleRgpd(e.target.checked)}
                     className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     required
                   />
                   <span className="leading-relaxed">
-                    J’accepte que mes données soient utilisées uniquement dans le
-                    cadre de ma demande de contact, conformément à la{" "}
+                    J’accepte que mes données soient utilisées uniquement dans le cadre
+                    de ma demande de contact, conformément à la{" "}
                     <a
                       href="/politique-de-confidentialite"
                       target="_blank"
+                      rel="noopener noreferrer"
                       className="text-blue-600 underline hover:text-blue-700"
-                      rel="noreferrer"
                     >
                       politique de confidentialité
                     </a>
@@ -387,13 +416,17 @@ export default function ContactSection() {
                 )}
               </div>
 
+              {errors.submit && (
+                <p className="text-red-500 text-sm -mt-2">{errors.submit}</p>
+              )}
+
               <motion.button
                 type="submit"
-                disabled={isSubmitting || !rgpdAccepted}
+                disabled={isDisabled}
                 whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                 whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                 className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 text-lg font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
-                  isSubmitting || !rgpdAccepted
+                  isDisabled
                     ? "opacity-70 cursor-not-allowed"
                     : "hover:from-blue-700 hover:to-blue-800"
                 }`}

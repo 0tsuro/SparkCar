@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,8 +19,12 @@ export const Slider = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // ✅ Ref du conteneur (pour calculer correctement la position en mobile/desktop)
+  // ✅ Ref du conteneur pour calculer la position
   const sliderRef = useRef<HTMLDivElement | null>(null);
+
+  // ✅ Drag UNIQUEMENT sur la poignée/barre
+  const handleRef = useRef<HTMLDivElement | null>(null);
+  const activePointerIdRef = useRef<number | null>(null);
 
   const slides: SliderPair[] = [
     {
@@ -60,7 +64,7 @@ export const Slider = () => {
 
   const current = slides[currentIndex];
 
-  // ✅ Convertit un clientX en % dans le conteneur
+  // ✅ Convertit clientX -> % dans le conteneur (inchangé)
   const updateFromClientX = useCallback((clientX: number) => {
     const el = sliderRef.current;
     if (!el) return;
@@ -71,7 +75,7 @@ export const Slider = () => {
     setSliderPosition(percent);
   }, []);
 
-  // ✅ Navigation
+  // ✅ Navigation (inchangé)
   const changeSlide = useCallback((newIndex: number, dir: number) => {
     setDirection(dir);
     setSliderPosition(50);
@@ -88,23 +92,63 @@ export const Slider = () => {
     changeSlide(newIndex, 1);
   }, [currentIndex, slides.length, changeSlide]);
 
-  // ✅ Pointer Events = mobile + desktop (fix du slider sur téléphone)
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    setIsDragging(true);
-    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    updateFromClientX(e.clientX);
-  };
+  // ✅ Drag START sur la poignée uniquement
+  const onHandlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      // Important pour iOS/Android : éviter scroll/zoom + sélection
+      e.preventDefault();
+      e.stopPropagation();
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-    updateFromClientX(e.clientX);
-  };
+      const handle = handleRef.current;
+      if (!handle) return;
 
-  const onPointerUp = () => {
+      activePointerIdRef.current = e.pointerId;
+      setIsDragging(true);
+
+      // Capture = continue à recevoir les moves même si le doigt sort du handle
+      try {
+        handle.setPointerCapture(e.pointerId);
+      } catch {}
+
+      updateFromClientX(e.clientX);
+    },
+    [updateFromClientX]
+  );
+
+  // ✅ Drag MOVE (sur le handle capturé)
+  const onHandlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      if (activePointerIdRef.current !== e.pointerId) return;
+
+      e.preventDefault();
+      updateFromClientX(e.clientX);
+    },
+    [isDragging, updateFromClientX]
+  );
+
+  // ✅ Drag END
+  const endDrag = useCallback((e?: React.PointerEvent<HTMLDivElement>) => {
     setIsDragging(false);
-  };
 
-  // ✅ Keyboard navigation
+    const handle = handleRef.current;
+    const pid = activePointerIdRef.current;
+    activePointerIdRef.current = null;
+
+    if (handle && pid != null) {
+      try {
+        handle.releasePointerCapture(pid);
+      } catch {}
+    }
+
+    // optionnel : empêche un "click" parasite après drag
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, []);
+
+  // ✅ Keyboard navigation (inchangé)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") prevSlide();
@@ -115,7 +159,7 @@ export const Slider = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [prevSlide, nextSlide]);
 
-  // ✅ Auto-play
+  // ✅ Auto-play (inchangé)
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isDragging) nextSlide();
@@ -124,7 +168,7 @@ export const Slider = () => {
     return () => clearInterval(interval);
   }, [nextSlide, isDragging]);
 
-  // Framer Motion variants
+  // Framer Motion variants (inchangé)
   const slideVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
@@ -150,7 +194,6 @@ export const Slider = () => {
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
         <div className="absolute top-1/2 -right-32 w-[500px] h-[500px] bg-indigo-200/20 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 left-1/3 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl" />
-
         <div
           className="absolute inset-0 opacity-[0.03]"
           style={{
@@ -177,7 +220,6 @@ export const Slider = () => {
         </p>
       </motion.div>
 
-      {/* Main Content */}
       <div className="relative z-10 w-full max-w-7xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
         {/* Slider Container */}
         <motion.div
@@ -186,14 +228,12 @@ export const Slider = () => {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative w-full lg:flex-1 aspect-[16/10] lg:aspect-[16/9] max-w-4xl rounded-3xl border-2 border-blue-800 shadow-2xl overflow-hidden bg-gray-900"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onPointerLeave={onPointerUp}
-          // ✅ clé mobile: empêche le scroll de la page pendant le drag
-          style={{ touchAction: "none" }}
+          className="relative w-full lg:flex-1 aspect-[16/10] lg:aspect-[16/9] max-w-4xl rounded-3xl border-2 border-blue-800 shadow-2xl overflow-hidden bg-gray-900 select-none"
+          // ✅ on ne met PLUS les pointer events sur le container
+          style={{
+            WebkitUserSelect: "none",
+            userSelect: "none",
+          }}
         >
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
@@ -211,12 +251,13 @@ export const Slider = () => {
                 alt={`${current.title} après lavage`}
                 fill
                 draggable={false}
+                // ⚠️ ne mets pas priority sur toutes les slides si tu en as plusieurs ailleurs
                 priority
                 src={current.after}
                 className="object-cover"
               />
 
-              {/* Before Image (Clipped) */}
+              {/* Before Image (Clipped) — inchangé */}
               <div
                 className="absolute top-0 left-0 w-full h-full overflow-hidden select-none"
                 style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -241,27 +282,51 @@ export const Slider = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* Slider Handle */}
+          {/* Slider Handle (DRAG HERE ONLY) */}
           <div
-            className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize z-20 shadow-lg"
+            className="absolute top-0 bottom-0 w-1 bg-white z-40 shadow-lg"
             style={{ left: `calc(${sliderPosition}% - 1px)` }}
           >
-            <div className="bg-white absolute rounded-full h-10 w-10 -left-[18px] top-[calc(50%-20px)] shadow-xl flex items-center justify-center border-2 border-blue-600">
-              <div className="flex gap-0.5">
-                <div className="w-0.5 h-4 bg-blue-600 rounded" />
-                <div className="w-0.5 h-4 bg-blue-600 rounded" />
+            {/* Zone de drag plus large + robuste */}
+            <div
+              ref={handleRef}
+              role="slider"
+              aria-label="Comparer avant/après"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(sliderPosition)}
+              tabIndex={0}
+              onPointerDown={onHandlePointerDown}
+              onPointerMove={onHandlePointerMove}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+              // ✅ IMPORTANT: empêche scroll/zoom pendant drag sur mobile
+              style={{
+                touchAction: "none",
+                WebkitUserSelect: "none",
+                userSelect: "none",
+              }}
+              className="absolute -left-[24px] top-0 bottom-0 w-[48px] cursor-ew-resize"
+            >
+              {/* Poignée visuelle */}
+              <div className="bg-white absolute rounded-full h-10 w-10 left-1/2 -translate-x-1/2 top-[calc(50%-20px)] shadow-xl flex items-center justify-center border-2 border-blue-600">
+                <div className="flex gap-0.5">
+                  <div className="w-0.5 h-4 bg-blue-600 rounded" />
+                  <div className="w-0.5 h-4 bg-blue-600 rounded" />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Navigation Arrows */}
-          <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6 z-30 pointer-events-none">
+          {/* Navigation Arrows (AU-DESSUS) */}
+          <div className="absolute inset-0 flex items-center justify-between px-4 md:px-6 z-50 pointer-events-none">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={prevSlide}
               aria-label="Image précédente"
               className="pointer-events-auto cursor-pointer bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <ChevronLeft className="w-5 h-5 md:w-7 md:h-7" />
             </motion.button>
@@ -272,13 +337,14 @@ export const Slider = () => {
               onClick={nextSlide}
               aria-label="Image suivante"
               className="pointer-events-auto cursor-pointer bg-black/50 hover:bg-black/70 text-white p-2 md:p-3 rounded-full shadow-lg transition backdrop-blur-sm"
+              onPointerDown={(e) => e.stopPropagation()}
             >
               <ChevronRight className="w-5 h-5 md:w-7 md:h-7" />
             </motion.button>
           </div>
 
           {/* Progress Indicators */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-50">
             {slides.map((_, i) => (
               <button
                 key={i}
@@ -289,6 +355,7 @@ export const Slider = () => {
                     ? "bg-blue-600 w-8 h-3"
                     : "bg-white/60 hover:bg-white w-3 h-3"
                 }`}
+                onPointerDown={(e) => e.stopPropagation()}
               />
             ))}
           </div>
@@ -312,21 +379,17 @@ export const Slider = () => {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
-              {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-semibold">
                 <Sparkles className="w-4 h-4" />
                 {current.formula}
               </div>
 
-              {/* Title */}
               <h3 className="text-3xl md:text-4xl font-bold text-gray-900">
                 {current.title}
               </h3>
 
-              {/* Divider */}
               <div className="w-16 h-1 bg-blue-600 rounded-full" />
 
-              {/* Features List */}
               <ul className="space-y-4 text-gray-700">
                 {current.details.map((item, i) => (
                   <motion.li
@@ -342,7 +405,6 @@ export const Slider = () => {
                 ))}
               </ul>
 
-              {/* CTA Link */}
               <motion.a
                 href="#contact"
                 whileHover={{ scale: 1.02 }}
@@ -356,7 +418,6 @@ export const Slider = () => {
         </motion.div>
       </div>
 
-      {/* Helper Text */}
       <motion.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}

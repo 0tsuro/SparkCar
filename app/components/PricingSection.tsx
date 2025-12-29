@@ -2,72 +2,110 @@
 
 import { motion, type Variants } from "framer-motion";
 import { Check } from "lucide-react";
+import { useMemo } from "react";
+
+type Plan = {
+  name: string;
+  price: string;
+  color: string;
+  hoverColor: string;
+  features: string[];
+  highlight?: boolean;
+};
+
+type Option = {
+  name: string;
+  price: string;
+};
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+};
+
+const fadeUp = {
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.3 },
+} as const;
 
 export default function PricingSection() {
-  const plans = [
-    {
-      name: "Standard",
-      price: "À partir de 35€*",
-      color: "border-gray-300",
-      hoverColor: "hover:border-gray-400",
-      features: [
-        "Aspiration complète de l’habitacle (sièges, tapis, coffre)",
-        "Dépoussiérage complet",
-        "Nettoyage de tous les plastiques intérieurs",
-        "Nettoyage des vitres intérieures",
-      ],
-    },
-    {
-      name: "Premium",
-      price: "À partir de 50€*",
-      color: "border-blue-600",
-      hoverColor: "hover:border-blue-700",
-      features: [
-        "Formule Standard incluse",
-        "Shampoing des tapis et moquettes",
-        "Protection UV des plastiques intérieurs",
-        "Nettoyage des contours de portes et du coffre",
-      ],
-      highlight: true,
-    },
-    {
-      name: "Deluxe",
-      price: "À partir de 85€*",
-      color: "border-yellow-500",
-      hoverColor: "hover:border-yellow-600",
-      features: [
-        "Formule Standard + Premium incluses",
-        "Shampoing intégral des sièges et tissus",
-        "Traitement et nettoyage des cuirs",
-        "Désinfection des surfaces à la vapeur",
-      ],
-    },
-  ];
+  const plans = useMemo<Plan[]>(
+    () => [
+      {
+        name: "Standard",
+        price: "À partir de 35€*",
+        color: "border-gray-300",
+        hoverColor: "hover:border-gray-400",
+        features: [
+          "Aspiration complète de l’habitacle (sièges, tapis, coffre)",
+          "Dépoussiérage complet",
+          "Nettoyage de tous les plastiques intérieurs",
+          "Nettoyage des vitres intérieures",
+        ],
+      },
+      {
+        name: "Premium",
+        price: "À partir de 50€*",
+        color: "border-blue-600",
+        hoverColor: "hover:border-blue-700",
+        features: [
+          "Formule Standard incluse",
+          "Shampoing des tapis et moquettes",
+          "Protection UV des plastiques intérieurs",
+          "Nettoyage des contours de portes et du coffre",
+        ],
+        highlight: true,
+      },
+      {
+        name: "Deluxe",
+        price: "À partir de 85€*",
+        color: "border-yellow-500",
+        hoverColor: "hover:border-yellow-600",
+        features: [
+          "Formule Standard + Premium incluses",
+          "Shampoing intégral des sièges et tissus",
+          "Traitement et nettoyage des cuirs",
+          "Désinfection des surfaces à la vapeur",
+        ],
+      },
+    ],
+    []
+  );
 
-  // Tuple cubic-bezier typé pour éviter l’erreur TS
-  const easeBezier: [number, number, number, number] = [0.22, 1, 0.36, 1];
+  const exteriorFeatures = useMemo(
+    () => [
+      "Prélavage à la mousse active",
+      "Lavage manuel de la carrosserie",
+      "Rinçage haute pression",
+      "Nettoyage des vitres extérieures",
+    ],
+    []
+  );
 
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
-  };
-
-  const cardVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: easeBezier },
-    },
-  };
+  const exteriorOptions = useMemo<Option[]>(
+    () => [
+      { name: "Nettoyage jantes & passages de roues", price: "20€" },
+      { name: "Décontamination ferreuse", price: "10€" },
+      { name: "Traitement céramique déperlant (3 mois)", price: "15€" },
+      { name: "Nettoyage compartiment moteur", price: "6€" },
+    ],
+    []
+  );
 
   return (
     <section className="w-full bg-gradient-to-b from-gray-50 to-white py-24 px-8 flex flex-col items-center">
-      {/* ===== TITRE ===== */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
         className="text-center mb-16"
       >
@@ -83,7 +121,6 @@ export default function PricingSection() {
         </p>
       </motion.div>
 
-      {/* ===== CARTES INTÉRIEUR ===== */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -91,7 +128,7 @@ export default function PricingSection() {
         viewport={{ once: true, margin: "-100px" }}
         className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10"
       >
-        {plans.map((plan, index) => (
+        {plans.map((plan, planIndex) => (
           <motion.div
             key={plan.name}
             variants={cardVariants}
@@ -104,7 +141,6 @@ export default function PricingSection() {
                 : "bg-white"
             }`}
           >
-            {/* Badge "Populaire" */}
             {plan.highlight && (
               <motion.span
                 initial={{ scale: 0 }}
@@ -125,13 +161,17 @@ export default function PricingSection() {
             </div>
 
             <ul className="space-y-4 mb-8 text-gray-700 text-left w-full">
-              {plan.features.map((feature, idx) => (
+              {plan.features.map((feature, featureIndex) => (
                 <motion.li
                   key={feature}
                   initial={{ opacity: 0, x: -10 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 + idx * 0.05 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{
+                    delay: planIndex * 0.1 + featureIndex * 0.05,
+                    duration: 0.35,
+                    ease: EASE,
+                  }}
                   className="flex items-start gap-3"
                 >
                   <Check className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
@@ -156,13 +196,11 @@ export default function PricingSection() {
         ))}
       </motion.div>
 
-      {/* ===== SECTION EXTÉRIEUR ===== */}
       <div className="w-full max-w-7xl mt-20">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
           className="text-center mb-10"
         >
@@ -179,11 +217,8 @@ export default function PricingSection() {
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          {/* Carte unique extérieur (même taille) */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            {...fadeUp}
             transition={{ duration: 0.6 }}
             className="relative rounded-3xl border-2 border-blue-600 bg-gradient-to-br from-blue-50 to-white shadow-xl p-8 min-h-[520px] flex flex-col"
           >
@@ -202,12 +237,7 @@ export default function PricingSection() {
             </div>
 
             <ul className="mt-8 space-y-4 text-gray-700">
-              {[
-                "Prélavage à la mousse active",
-                "Lavage manuel de la carrosserie",
-                "Rinçage haute pression",
-                "Nettoyage des vitres extérieures",
-              ].map((feature) => (
+              {exteriorFeatures.map((feature) => (
                 <li key={feature} className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{feature}</span>
@@ -215,26 +245,22 @@ export default function PricingSection() {
               ))}
             </ul>
 
-<motion.a
-  href="#contact"
-  whileHover={{ scale: 1.03 }}
-  whileTap={{ scale: 0.98 }}
-  className="mt-auto w-full cursor-pointer bg-gradient-to-r from-[#010D50] to-[#0328EE] hover:brightness-110 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-md hover:shadow-xl text-center"
->
-  Estimer mon tarif
-</motion.a>
-
+            <motion.a
+              href="#contact"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-auto w-full cursor-pointer bg-gradient-to-r from-[#010D50] to-[#0328EE] hover:brightness-110 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-md hover:shadow-xl text-center"
+            >
+              Estimer mon tarif
+            </motion.a>
 
             <p className="text-gray-500 text-xs mt-4">
               * Tarif indicatif selon gabarit/état du véhicule.
             </p>
           </motion.div>
 
-          {/* Options extérieur (même taille) */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            {...fadeUp}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="rounded-3xl border border-gray-200 bg-white shadow-lg p-8 min-h-[520px] flex flex-col"
           >
@@ -246,15 +272,7 @@ export default function PricingSection() {
             </p>
 
             <div className="space-y-4">
-              {[
-                { name: "Nettoyage jantes & passages de roues", price: "20€" },
-                { name: "Décontamination ferreuse", price: "10€" },
-                {
-                  name: "Traitement céramique déperlant (3 mois)",
-                  price: "15€",
-                },
-                { name: "Nettoyage compartiment moteur", price: "6€" },
-              ].map((opt) => (
+              {exteriorOptions.map((opt) => (
                 <div
                   key={opt.name}
                   className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-gray-200 hover:border-blue-200 hover:bg-blue-50/40 transition"
@@ -288,11 +306,10 @@ export default function PricingSection() {
         </div>
       </div>
 
-      {/* Note de bas de page */}
       <motion.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, amount: 0.6 }}
         transition={{ delay: 0.5 }}
         className="text-gray-500 text-sm mt-12 text-center max-w-2xl"
       >
