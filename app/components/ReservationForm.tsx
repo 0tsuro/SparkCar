@@ -20,8 +20,21 @@ type FormState = {
 
 type ErrorsState = Partial<Record<keyof FormState | "rgpd" | "submit", string>>;
 
-const PHONE_REGEX =
-  /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+const PHONE_REGEX = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+async function safeJson(res: Response): Promise<unknown> {
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) return null;
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 export default function ContactSection() {
   const [form, setForm] = useState<FormState>({ name: "", phone: "", message: "" });
@@ -88,12 +101,18 @@ export default function ContactSection() {
           body: JSON.stringify(form),
         });
 
-        const data = await res.json().catch(() => ({} as any));
+        const data = await safeJson(res);
 
         if (!res.ok) {
+          let apiError: string | undefined;
+
+          if (isRecord(data) && typeof data.error === "string") {
+            apiError = data.error;
+          }
+
           setErrors((prev) => ({
             ...prev,
-            submit: data?.error || "Une erreur est survenue. Réessayez.",
+            submit: apiError || "Une erreur est survenue. Réessayez.",
           }));
           return;
         }
@@ -185,8 +204,7 @@ export default function ContactSection() {
             Prenez <span className="text-blue-700">contact</span> avec moi
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Je suis à votre écoute pour répondre à toutes vos questions et
-            réserver votre prestation
+            Je suis à votre écoute pour répondre à toutes vos questions et réserver votre prestation
           </p>
         </motion.div>
 
@@ -203,8 +221,7 @@ export default function ContactSection() {
                 Service à domicile
               </h3>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Je viens laver votre véhicule directement à votre domicile ou
-                sur votre lieu de travail. Réponse rapide garantie sous 2 heures !
+                Je viens laver votre véhicule directement à votre domicile ou sur votre lieu de travail. Réponse rapide garantie sous 2 heures !
               </p>
             </div>
 
@@ -230,12 +247,8 @@ export default function ContactSection() {
                       <Icon size={24} />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600 font-medium">
-                        {contact.label}
-                      </p>
-                      <p
-                        className={`text-lg font-semibold ${contact.color} group-hover:underline`}
-                      >
+                      <p className="text-sm text-gray-600 font-medium">{contact.label}</p>
+                      <p className={`text-lg font-semibold ${contact.color} group-hover:underline`}>
                         {contact.value}
                       </p>
                     </div>
@@ -254,12 +267,8 @@ export default function ContactSection() {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
                 <div>
-                  <p className="font-semibold text-gray-900">
-                    Zone d&apos;intervention
-                  </p>
-                  <p className="text-gray-600">
-                    Saint-Omer et alentours (30km)
-                  </p>
+                  <p className="font-semibold text-gray-900">Zone d&apos;intervention</p>
+                  <p className="text-gray-600">Saint-Omer et alentours (30km)</p>
                 </div>
               </div>
 
@@ -296,12 +305,8 @@ export default function ContactSection() {
                   >
                     <CheckCircle2 className="w-20 h-20 text-green-600 mb-4" />
                   </motion.div>
-                  <h4 className="text-2xl font-bold text-gray-900 mb-2">
-                    Message envoyé !
-                  </h4>
-                  <p className="text-gray-600">
-                    Je vous répondrai très rapidement
-                  </p>
+                  <h4 className="text-2xl font-bold text-gray-900 mb-2">Message envoyé !</h4>
+                  <p className="text-gray-600">Je vous répondrai très rapidement</p>
                 </motion.div>
               )}
 
@@ -309,16 +314,11 @@ export default function ContactSection() {
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                   Demande de réservation
                 </h3>
-                <p className="text-gray-600">
-                  Remplissez le formulaire et je vous recontacterai
-                </p>
+                <p className="text-gray-600">Remplissez le formulaire et je vous recontacterai</p>
               </div>
 
               <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
                   Nom complet <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -334,16 +334,11 @@ export default function ContactSection() {
                   autoComplete="name"
                   inputMode="text"
                 />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                )}
+                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
 
               <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
+                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
                   Téléphone <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -359,16 +354,11 @@ export default function ContactSection() {
                   autoComplete="tel"
                   inputMode="tel"
                 />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                )}
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
 
               <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-semibold text-gray-700 mb-2"
-                >
+                <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
                   Votre demande <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -382,9 +372,7 @@ export default function ContactSection() {
                   } rounded-xl py-3 px-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 resize-none transition-all`}
                   placeholder="Bonjour, je souhaiterais un lavage complet pour ma BMW à Arques. Je suis disponible mercredi matin."
                 />
-                {errors.message && (
-                  <p className="text-red-500 text-sm mt-1">{errors.message}</p>
-                )}
+                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
               </div>
 
               <div className="space-y-1">
@@ -397,8 +385,7 @@ export default function ContactSection() {
                     required
                   />
                   <span className="leading-relaxed">
-                    J’accepte que mes données soient utilisées uniquement dans le cadre
-                    de ma demande de contact, conformément à la{" "}
+                    J’accepte que mes données soient utilisées uniquement dans le cadre de ma demande de contact, conformément à la{" "}
                     <a
                       href="/politique-de-confidentialite"
                       target="_blank"
@@ -411,14 +398,10 @@ export default function ContactSection() {
                   </span>
                 </label>
 
-                {errors.rgpd && (
-                  <p className="text-red-500 text-sm mt-1">{errors.rgpd}</p>
-                )}
+                {errors.rgpd && <p className="text-red-500 text-sm mt-1">{errors.rgpd}</p>}
               </div>
 
-              {errors.submit && (
-                <p className="text-red-500 text-sm -mt-2">{errors.submit}</p>
-              )}
+              {errors.submit && <p className="text-red-500 text-sm -mt-2">{errors.submit}</p>}
 
               <motion.button
                 type="submit"
@@ -426,9 +409,7 @@ export default function ContactSection() {
                 whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
                 whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                 className={`w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 text-lg font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
-                  isDisabled
-                    ? "opacity-70 cursor-not-allowed"
-                    : "hover:from-blue-700 hover:to-blue-800"
+                  isDisabled ? "opacity-70 cursor-not-allowed" : "hover:from-blue-700 hover:to-blue-800"
                 }`}
               >
                 {isSubmitting ? (
