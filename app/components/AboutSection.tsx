@@ -26,6 +26,10 @@ export default function AboutSection() {
             <span className="inline-flex mb-5 px-4 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full">
               À propos
             </span>
+            <p className="sr-only">
+  Spark’Car : lavage auto à domicile et detailing à Saint-Omer et Hauts-de-France.
+</p>
+
 
             <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
               Une approche simple, <br />
@@ -34,8 +38,8 @@ export default function AboutSection() {
 
             <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
               En parallèle de mes études, j’ai lancé Spark’Car pour proposer un
-              nettoyage automobile professionnel et accessible. Chaque véhicule
-              est traité avec rigueur, passion et le souci du détail.
+nettoyage automobile professionnel à domicile, à Saint-Omer et alentours.
+
             </p>
 
             <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
@@ -85,7 +89,7 @@ export default function AboutSection() {
                   <div className="col-span-2 relative overflow-hidden rounded-2xl aspect-[16/9]">
                     <Image
                       src="/photo1.svg"
-                      alt="Lavage auto - finition"
+                      alt="Détail de finition après lavage auto à domicile Spark’Car"
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 560px"
@@ -98,7 +102,7 @@ export default function AboutSection() {
                   <div className="relative overflow-hidden rounded-2xl aspect-[4/3]">
                     <Image
                       src="/photo2.svg"
-                      alt="Lavage auto - détail"
+                      alt="Nettoyage intérieur : détails et précision Spark’Car"
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 50vw, 280px"
@@ -110,7 +114,7 @@ export default function AboutSection() {
                   <div className="relative overflow-hidden rounded-2xl aspect-[4/3]">
                     <Image
                       src="/photo3.svg"
-                      alt="Lavage auto - brillance"
+                      alt="Brillance carrosserie après nettoyage extérieur Spark’Car"
                       fill
                       className="object-cover"
                       sizes="(max-width: 1024px) 50vw, 280px"

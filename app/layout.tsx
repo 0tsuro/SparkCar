@@ -13,9 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spark’Car",
-  description: "Detailing automobile haut de gamme à Saint Omer et Haut de France.",
+  title: "Lavage auto à domicile à Saint-Omer | Spark’Car",
+  description:
+    "Spark’Car propose le lavage et detailing automobile à domicile à Saint-Omer et dans les Hauts-de-France. Nettoyage intérieur et extérieur professionnel.",
 };
+
 
 export default function RootLayout({
   children,
@@ -23,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

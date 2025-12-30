@@ -28,8 +28,8 @@ export const Slider = () => {
 
   const slides: SliderPair[] = [
     {
-      before: "/cleanmerco1.svg",
-      after: "/cleanmerco2.svg",
+      before: "/cleanmerco1.avif",
+      after: "/cleanmerco2.avif",
       title: "Mercedes GLC",
       formula: "Formule Premium",
       details: [
@@ -39,8 +39,8 @@ export const Slider = () => {
       ],
     },
     {
-      before: "/cleanporsche1.svg",
-      after: "/cleanporsche2.svg",
+      before: "/cleanporsche1.avif",
+      after: "/cleanporsche2.avif",
       title: "Porsche 987",
       formula: "Formule Extérieur",
       details: [
@@ -50,8 +50,8 @@ export const Slider = () => {
       ],
     },
     {
-      before: "/cleancoffre1.svg",
-      after: "/cleancoffre2.svg",
+      before: "/cleancoffre1.avif",
+      after: "/cleancoffre2.avif",
       title: "Mercedes GLC",
       formula: "Formule Deluxe",
       details: [

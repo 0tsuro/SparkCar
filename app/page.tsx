@@ -157,11 +157,11 @@ export default function Page() {
           className="flex items-center space-x-2"
         >
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt="Spark’Car Logo"
-            width={150}
-            height={150}
-            className="w-32 lg:w-36 h-auto"
+            width={300}
+            height={300}
+            className="w-32 lg:w-64 h-auto"
             priority
             sizes="(max-width: 1024px) 128px, 144px"
           />
@@ -332,6 +332,10 @@ export default function Page() {
             className="text-4xl md:text-6xl lg:text-7xl text-gray-900 font-extrabold mb-6 leading-tight"
           >
             Redonnez <span className="text-blue-700">vie</span> à votre voiture
+            <p className="sr-only">
+  Lavage auto à domicile et detailing à Saint-Omer et dans les Hauts-de-France.
+</p>
+
           </motion.h1>
 
           <motion.p
@@ -377,7 +381,7 @@ export default function Page() {
         >
           <Image
             src="/bmw.png"
-            alt="BMW voiture de luxe"
+            alt="Véhicule après lavage auto à domicile par Spark’Car"
             width={800}
             height={600}
             className="w-full h-auto drop-shadow-2xl"
@@ -414,17 +418,21 @@ export default function Page() {
 
       {/* Services */}
       <section id="services" className="w-full">
+        <h2 className="sr-only">Services de lavage auto à domicile</h2>
         <Slider />
+        
       </section>
 
       {/* Pricing */}
       <section id="nosformules">
         <PricingSection />
+        <h2 className="sr-only">Formules et tarifs</h2>
       </section>
 
       {/* About */}
       <section id="a-propos" className="w-full">
         <AboutSection />
+        <h2 className="sr-only">À propos de Spark’Car</h2>
       </section>
 
       {/* Reservation */}
@@ -433,11 +441,13 @@ export default function Page() {
         className="min-h-screen flex items-center justify-center bg-white"
       >
         <ReservationForm />
+        <h2 className="sr-only">Réservation lavage auto</h2>
       </section>
 
       {/* Footer */}
       <section id="contact">
         <Footer />
+        <h2 className="sr-only">Contact Spark’Car</h2>
       </section>
     </main>
   );
