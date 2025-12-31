@@ -157,7 +157,7 @@ export default function Page() {
           className="flex items-center space-x-2"
         >
           <Image
-            src="/logo.svg"
+            src="/logo2.png"
             alt="Spark’Car Logo"
             width={300}
             height={300}
