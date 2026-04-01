@@ -41,11 +41,11 @@ export default function PricingSection() {
     () => [
       {
         name: "Standard",
-        price: "À partir de 35€*",
+        price: "À partir de 49€*",
         color: "border-gray-300",
         hoverColor: "hover:border-gray-400",
         features: [
-          "Aspiration complète de l’habitacle (sièges, tapis, coffre)",
+          "Aspiration complète de l’habitacle (coffre non compris)",
           "Dépoussiérage complet",
           "Nettoyage de tous les plastiques intérieurs",
           "Nettoyage des vitres intérieures",
@@ -53,7 +53,7 @@ export default function PricingSection() {
       },
       {
         name: "Premium",
-        price: "À partir de 50€*",
+        price: "À partir de 69€*",
         color: "border-blue-600",
         hoverColor: "hover:border-blue-700",
         features: [
@@ -66,7 +66,7 @@ export default function PricingSection() {
       },
       {
         name: "Deluxe",
-        price: "À partir de 85€*",
+        price: "À partir de 99€*",
         color: "border-yellow-500",
         hoverColor: "hover:border-yellow-600",
         features: [
@@ -231,7 +231,7 @@ export default function PricingSection() {
                   Formule Extérieur
                 </h4>
                 <p className="text-blue-700 font-extrabold text-2xl mt-2">
-                  À partir de 40€*
+                  À partir de 39€*
                 </p>
               </div>
             </div>
