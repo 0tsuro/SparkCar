@@ -69,7 +69,7 @@ export default function Page() {
   // Active section tracking (rAF throttled)
   useEffect(() => {
     const sections = Array.from(
-      document.querySelectorAll<HTMLElement>("section[id]")
+      document.querySelectorAll<HTMLElement>("section[id]"),
     );
     if (!sections.length) return;
 
@@ -87,7 +87,7 @@ export default function Page() {
           }
         });
       },
-      { rootMargin: "-20% 0px -70% 0px" }
+      { rootMargin: "-20% 0px -70% 0px" },
     );
 
     sections.forEach((s) => observer.observe(s));
@@ -105,7 +105,7 @@ export default function Page() {
       setIsMobileMenuOpen(false);
       smoothScrollTo(href);
     },
-    [smoothScrollTo]
+    [smoothScrollTo],
   );
 
   const navLinks = useMemo(
@@ -116,7 +116,7 @@ export default function Page() {
       { href: "#a-propos", label: "À propos" },
       { href: "#contact", label: "Contact" },
     ],
-    []
+    [],
   );
 
   const toggleMobileMenu = useCallback(() => {
@@ -333,9 +333,9 @@ export default function Page() {
           >
             Redonnez <span className="text-blue-700">vie</span> à votre voiture
             <p className="sr-only">
-  Lavage auto à domicile et detailing à Saint-Omer et dans les Hauts-de-France.
-</p>
-
+              Lavage auto à domicile et detailing à Saint-Omer et dans les
+              Hauts-de-France.
+            </p>
           </motion.h1>
 
           <motion.p
@@ -344,8 +344,8 @@ export default function Page() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Un lavage simple, efficace et sans artifices : l’attention qu’il faut
-            pour que votre auto brille à nouveau.
+            Un lavage simple, efficace et sans artifices : l’attention qu’il
+            faut pour que votre auto brille à nouveau.
           </motion.p>
 
           <motion.div
@@ -420,7 +420,6 @@ export default function Page() {
       <section id="services" className="w-full">
         <h2 className="sr-only">Services de lavage auto à domicile</h2>
         <Slider />
-        
       </section>
 
       {/* Pricing */}

@@ -11,9 +11,7 @@ const fadeUp = {
 
 export default function AboutSection() {
   return (
-    <section
-      className="relative bg-white min-h-screen flex items-center overflow-hidden px-6 py-24"
-    >
+    <section className="relative bg-white min-h-screen flex items-center overflow-hidden px-6 py-24">
       <div className="absolute -top-48 -right-48 w-[700px] h-[700px] rounded-full bg-gradient-to-br from-blue-300 to-blue-600 opacity-40 blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-6xl mx-auto">
@@ -27,9 +25,9 @@ export default function AboutSection() {
               À propos
             </span>
             <p className="sr-only">
-  Spark’Car : lavage auto à domicile et detailing à Saint-Omer et Hauts-de-France.
-</p>
-
+              Spark’Car : lavage auto à domicile et detailing à Saint-Omer et
+              Hauts-de-France.
+            </p>
 
             <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
               Une approche simple, <br />
@@ -38,13 +36,14 @@ export default function AboutSection() {
 
             <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
               En parallèle de mes études, j’ai lancé Spark’Car pour proposer un
-nettoyage automobile professionnel à domicile, à Saint-Omer et alentours.
-
+              nettoyage automobile professionnel à domicile, à Saint-Omer et
+              alentours.
             </p>
 
             <p className="text-lg text-gray-600 leading-relaxed mb-6 max-w-xl mx-auto lg:mx-0">
-              Travail propre, résultats visibles, sans artifices. Chaque véhicule
-              est traité avec méthode et précision, pour un rendu net et durable.
+              Travail propre, résultats visibles, sans artifices. Chaque
+              véhicule est traité avec méthode et précision, pour un rendu net
+              et durable.
             </p>
 
             <p className="text-lg text-gray-600 leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0">
@@ -88,7 +87,7 @@ nettoyage automobile professionnel à domicile, à Saint-Omer et alentours.
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2 relative overflow-hidden rounded-2xl aspect-[16/9]">
                     <Image
-                      src="/photo1.svg"
+                      src="/pierre3.jpg"
                       alt="Détail de finition après lavage auto à domicile Spark’Car"
                       fill
                       className="object-cover"
@@ -101,7 +100,7 @@ nettoyage automobile professionnel à domicile, à Saint-Omer et alentours.
 
                   <div className="relative overflow-hidden rounded-2xl aspect-[4/3]">
                     <Image
-                      src="/photo2.svg"
+                      src="/pierre2.jpg"
                       alt="Nettoyage intérieur : détails et précision Spark’Car"
                       fill
                       className="object-cover"
@@ -113,7 +112,7 @@ nettoyage automobile professionnel à domicile, à Saint-Omer et alentours.
 
                   <div className="relative overflow-hidden rounded-2xl aspect-[4/3]">
                     <Image
-                      src="/photo3.svg"
+                      src="/pierre1.jpg"
                       alt="Brillance carrosserie après nettoyage extérieur Spark’Car"
                       fill
                       className="object-cover"
