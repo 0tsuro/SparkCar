@@ -1,321 +1,364 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
-import { Check } from "lucide-react";
-import { useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useCallback, useEffect, Fragment } from "react";
+import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import Cal, { getCalApi } from "@calcom/embed-react";
 
-type Plan = {
-  name: string;
-  price: string;
-  color: string;
-  hoverColor: string;
-  features: string[];
-  highlight?: boolean;
-};
+const VEHICLES = [
+  { id: "berline", label: "Berline", emoji: "🚗", desc: "Berline standard" },
+  { id: "citadine", label: "Citadine", emoji: "🚙", desc: "Petite voiture urbaine" },
+  { id: "suv", label: "SUV", emoji: "🛻", desc: "Grand gabarit, 4×4" },
+  { id: "mono5", label: "Mono 5", emoji: "🚐", desc: "Monospace familiale" },
+];
 
-type Option = {
-  name: string;
-  price: string;
-};
+const FORMULAS = [
+  {
+    id: "express",
+    label: "Express",
+    price: "69 €",
+    highlight: false,
+    namespace: "nettoyage-express",
+    calLink: "sparkcar/nettoyage-express",
+    features: [
+      "Aspiration complète de l'habitacle",
+      "Dépoussiérage intérieur",
+      "Nettoyage des vitres intérieures",
+    ],
+  },
+  {
+    id: "approfondi",
+    label: "Approfondi",
+    price: "89 €",
+    highlight: true,
+    namespace: "nettoyage-approfondi",
+    calLink: "sparkcar/nettoyage-approfondi",
+    features: [
+      "Formule Express incluse",
+      "Shampoing moquettes & tapis",
+      "Protection UV des plastiques",
+      "Nettoyage contours de portes",
+    ],
+  },
+  {
+    id: "premium",
+    label: "Premium",
+    price: "129 €",
+    highlight: false,
+    namespace: "nettoyage-premium",
+    calLink: "sparkcar/nettoyage-premium",
+    features: [
+      "Formule Approfondi incluse",
+      "Shampoing intégral sièges & cuirs",
+      "Désinfection vapeur des surfaces",
+    ],
+  },
+];
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.15 } },
+const stepVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
+  exit: { opacity: 0, y: -12, transition: { duration: 0.2, ease: EASE } },
 };
 
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
-};
+const STEP_LABELS = ["Votre véhicule", "Votre formule", "Votre créneau"];
 
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, amount: 0.3 },
-} as const;
+type Formula = typeof FORMULAS[number];
 
-export default function PricingSection() {
-  const plans = useMemo<Plan[]>(
-    () => [
-      {
-        name: "Standard",
-        price: "À partir de 35€*",
-        color: "border-gray-300",
-        hoverColor: "hover:border-gray-400",
-        features: [
-          "Aspiration complète de l’habitacle (sièges, tapis, coffre)",
-          "Dépoussiérage complet",
-          "Nettoyage de tous les plastiques intérieurs",
-          "Nettoyage des vitres intérieures",
-        ],
-      },
-      {
-        name: "Premium",
-        price: "À partir de 50€*",
-        color: "border-blue-600",
-        hoverColor: "hover:border-blue-700",
-        features: [
-          "Formule Standard incluse",
-          "Shampoing des tapis et moquettes",
-          "Protection UV des plastiques intérieurs",
-          "Nettoyage des contours de portes et du coffre",
-        ],
-        highlight: true,
-      },
-      {
-        name: "Deluxe",
-        price: "À partir de 85€*",
-        color: "border-yellow-500",
-        hoverColor: "hover:border-yellow-600",
-        features: [
-          "Formule Standard + Premium incluses",
-          "Shampoing intégral des sièges et tissus",
-          "Traitement et nettoyage des cuirs",
-          "Désinfection des surfaces à la vapeur",
-        ],
-      },
-    ],
-    []
-  );
-
-  const exteriorFeatures = useMemo(
-    () => [
-      "Prélavage à la mousse active",
-      "Lavage manuel de la carrosserie",
-      "Rinçage haute pression",
-      "Nettoyage des vitres extérieures",
-    ],
-    []
-  );
-
-  const exteriorOptions = useMemo<Option[]>(
-    () => [
-      { name: "Nettoyage jantes & passages de roues", price: "20€" },
-      { name: "Décontamination ferreuse", price: "10€" },
-      { name: "Traitement céramique déperlant (3 mois)", price: "15€" },
-      { name: "Nettoyage compartiment moteur", price: "6€" },
-    ],
-    []
-  );
+function CalEmbed({ formula }: { formula: Formula }) {
+  useEffect(() => {
+    (async () => {
+      const cal = await getCalApi({ namespace: formula.namespace });
+      cal("ui", { hideEventTypeDetails: false, layout: "month_view" });
+    })();
+  }, [formula.namespace]);
 
   return (
-    <section className="w-full bg-gradient-to-b from-gray-50 to-white py-24 px-8 flex flex-col items-center">
+    <Cal
+      namespace={formula.namespace}
+      calLink={formula.calLink}
+      style={{ width: "100%", height: "100%", overflow: "scroll" }}
+      config={{ layout: "month_view", useSlotsViewOnSmallScreen: "true" }}
+    />
+  );
+}
+
+export default function PricingSection() {
+  const [step, setStep] = useState(0);
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedFormula, setSelectedFormula] = useState<string | null>(null);
+
+  const vehicle = VEHICLES.find((v) => v.id === selectedVehicle);
+  const formula = FORMULAS.find((f) => f.id === selectedFormula);
+  const canAdvance = step === 0 ? !!selectedVehicle : !!selectedFormula;
+
+  const handleNext = useCallback(() => {
+    setStep((s) => Math.min(s + 1, 2));
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setStep((s) => Math.max(s - 1, 0));
+  }, []);
+
+  return (
+    <section className="w-full bg-gradient-to-b from-gray-50 to-white py-8 md:py-24 px-6 md:px-8 flex flex-col items-center">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-16"
+        className="text-center mb-5 md:mb-14"
       >
-        <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4">
-          Nos <span className="text-blue-700">formules</span>
+        <h2 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-2 md:mb-4">
+          <span className="text-blue-700">Réserver</span>
         </h2>
-        <h3 className="text-2xl font-semibold text-gray-700 mb-4">
-          Entretien intérieur professionnel
-        </h3>
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto leading-relaxed">
-          Choisissez votre niveau de prestation. Les tarifs varient selon la
-          taille et l’état du véhicule.
+        <p className="text-gray-600 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed">
+          Sélectionnez votre véhicule et votre formule, puis choisissez un
+          créneau disponible.
         </p>
       </motion.div>
 
+      {/* Step indicator */}
       <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10"
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="w-full max-w-lg mx-auto mb-5 md:mb-12"
       >
-        {plans.map((plan, planIndex) => (
-          <motion.div
-            key={plan.name}
-            variants={cardVariants}
-            whileHover={{ y: -8, transition: { duration: 0.3 } }}
-            className={`relative border-2 ${plan.color} ${
-              plan.hoverColor
-            } rounded-2xl shadow-lg p-8 flex flex-col items-center text-center transition-all duration-300 hover:shadow-2xl ${
-              plan.highlight
-                ? "bg-gradient-to-br from-blue-50 to-white border-blue-600 scale-105 md:scale-110"
-                : "bg-white"
-            }`}
-          >
-            {plan.highlight && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="absolute -top-4 bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md"
-              >
-                ⭐ Populaire
-              </motion.span>
-            )}
-
-            <h3 className="text-3xl font-bold mb-2 text-gray-900">
-              {plan.name}
-            </h3>
-
-            <div className="mb-6">
-              <p className="text-blue-700 font-bold text-2xl">{plan.price}</p>
-            </div>
-
-            <ul className="space-y-4 mb-8 text-gray-700 text-left w-full">
-              {plan.features.map((feature, featureIndex) => (
-                <motion.li
-                  key={feature}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.6 }}
-                  transition={{
-                    delay: planIndex * 0.1 + featureIndex * 0.05,
-                    duration: 0.35,
-                    ease: EASE,
+        <div className="flex items-start justify-between">
+          {STEP_LABELS.map((label, i) => (
+            <Fragment key={label}>
+              <div className="flex flex-col items-center gap-1 md:gap-2 flex-shrink-0">
+                <motion.div
+                  animate={{
+                    backgroundColor: i <= step ? "#1d4ed8" : "#e5e7eb",
+                    color: i <= step ? "#ffffff" : "#9ca3af",
                   }}
-                  className="flex items-start gap-3"
+                  transition={{ duration: 0.3 }}
+                  className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-xs md:text-sm ${
+                    i === step ? "ring-4 ring-blue-200" : ""
+                  }`}
                 >
-                  <Check className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{feature}</span>
-                </motion.li>
-              ))}
-            </ul>
-
-            <motion.a
-              href="#contact"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`mt-auto w-full ${
-                plan.highlight
-                  ? "bg-blue-700 hover:bg-blue-800"
-                  : "bg-gray-800 hover:bg-gray-900"
-              } text-white cursor-pointer font-semibold px-8 py-4 rounded-xl transition-all shadow-md hover:shadow-xl text-center`}
-            >
-              Estimer mon tarif
-            </motion.a>
-          </motion.div>
-        ))}
+                  {i < step ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : i + 1}
+                </motion.div>
+                <span
+                  className={`text-[10px] md:text-xs font-semibold text-center max-w-[56px] md:max-w-[72px] leading-tight ${
+                    i <= step ? "text-blue-700" : "text-gray-400"
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+              {i < STEP_LABELS.length - 1 && (
+                <div className="flex-1 h-1 mt-4 md:mt-5 mx-2 md:mx-3 bg-gray-200 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-blue-700 rounded-full"
+                    animate={{ width: i < step ? "100%" : "0%" }}
+                    transition={{ duration: 0.4, ease: EASE }}
+                  />
+                </div>
+              )}
+            </Fragment>
+          ))}
+        </div>
       </motion.div>
 
-      <div className="w-full max-w-7xl mt-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-10"
-        >
-          <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            Nettoyage <span className="text-blue-700">extérieur</span>
-          </h3>
-          <p className="text-gray-600 text-lg max-w-3xl mx-auto leading-relaxed">
-            Donnez un nouvel éclat à votre véhicule grâce à un lavage extérieur
-            professionnel. <br className="hidden md:block" />
-            <span className="text-gray-500">
-              Tarif variable selon la catégorie du véhicule.
-            </span>
-          </p>
-        </motion.div>
+      {/* Step content */}
+      <div className="w-full max-w-5xl">
+        <AnimatePresence mode="wait">
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          <motion.div
-            {...fadeUp}
-            transition={{ duration: 0.6 }}
-            className="relative rounded-3xl border-2 border-blue-600 bg-gradient-to-br from-blue-50 to-white shadow-xl p-8 min-h-[520px] flex flex-col"
-          >
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <span className="inline-flex items-center gap-2 text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-full shadow">
-                  EXTÉRIEUR
-                </span>
-                <h4 className="text-3xl font-bold text-gray-900 mt-4">
-                  Formule Extérieur
-                </h4>
-                <p className="text-blue-700 font-extrabold text-2xl mt-2">
-                  À partir de 40€*
-                </p>
-              </div>
-            </div>
-
-            <ul className="mt-8 space-y-4 text-gray-700">
-              {exteriorFeatures.map((feature) => (
-                <li key={feature} className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
-                  <span className="leading-relaxed">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <motion.a
-              href="#contact"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-auto w-full cursor-pointer bg-gradient-to-r from-[#010D50] to-[#0328EE] hover:brightness-110 text-white font-semibold px-8 py-4 rounded-xl transition-all shadow-md hover:shadow-xl text-center"
+          {/* Step 1 – Vehicle */}
+          {step === 0 && (
+            <motion.div
+              key="vehicle"
+              variants={stepVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
             >
-              Estimer mon tarif
-            </motion.a>
-
-            <p className="text-gray-500 text-xs mt-4">
-              * Tarif indicatif selon gabarit/état du véhicule.
-            </p>
-          </motion.div>
-
-          <motion.div
-            {...fadeUp}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="rounded-3xl border border-gray-200 bg-white shadow-lg p-8 min-h-[520px] flex flex-col"
-          >
-            <h4 className="text-2xl font-bold text-gray-900 mb-2">
-              Options extérieur
-            </h4>
-            <p className="text-gray-600 mb-6">
-              Personnalisez la prestation selon vos besoins.
-            </p>
-
-            <div className="space-y-4">
-              {exteriorOptions.map((opt) => (
-                <div
-                  key={opt.name}
-                  className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-gray-200 hover:border-blue-200 hover:bg-blue-50/40 transition"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 inline-block w-2 h-2 bg-blue-700 rounded-full flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-gray-900">{opt.name}</p>
-                      <p className="text-sm text-gray-500">
-                        Ajout possible lors de la réservation
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-blue-700 font-extrabold text-lg whitespace-nowrap">
-                    {opt.price}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-auto pt-6">
-              <div className="rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
-                <p className="text-sm text-gray-700">
-                  💡 Conseil : les options “jantes” + “décontamination” donnent
-                  souvent le meilleur rendu visuel sur carrosserie claire ou
-                  jantes encrassées.
-                </p>
+              <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-4 md:mb-8 text-center">
+                Quel est votre véhicule ?
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-10">
+                {VEHICLES.map((v) => (
+                  <motion.button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setSelectedVehicle(v.id)}
+                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`relative border-2 rounded-2xl p-3 md:p-6 flex flex-col items-center gap-1.5 md:gap-3 transition-all duration-200 cursor-pointer ${
+                      selectedVehicle === v.id
+                        ? "border-blue-600 bg-blue-50 shadow-lg"
+                        : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-md"
+                    }`}
+                  >
+                    {selectedVehicle === v.id && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="absolute top-2 right-2 w-4 h-4 md:w-5 md:h-5 bg-blue-600 rounded-full flex items-center justify-center"
+                      >
+                        <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" />
+                      </motion.div>
+                    )}
+                    <span className="text-2xl md:text-4xl select-none">{v.emoji}</span>
+                    <span className="font-bold text-gray-900 text-sm md:text-lg">{v.label}</span>
+                    <span className="hidden md:block text-xs text-gray-500 text-center leading-snug">
+                      {v.desc}
+                    </span>
+                  </motion.button>
+                ))}
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
+
+          {/* Step 2 – Formula */}
+          {step === 1 && (
+            <motion.div
+              key="formula"
+              variants={stepVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-4 md:mb-8 text-center">
+                Quelle formule vous convient ?
+              </h3>
+              {/* Mobile: 3 cols compacts / Desktop: 3 cols full */}
+              <div className="grid grid-cols-3 gap-2 md:gap-8 mb-4 md:mb-10 items-center">
+                {FORMULAS.map((f) => (
+                  <motion.button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setSelectedFormula(f.id)}
+                    whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                    whileTap={{ scale: 0.97 }}
+                    className={`relative border-2 rounded-2xl p-3 md:p-8 flex flex-col items-center text-center transition-all duration-200 cursor-pointer ${
+                      selectedFormula === f.id
+                        ? "border-blue-600 bg-gradient-to-br from-blue-50 to-white shadow-2xl"
+                        : f.highlight
+                        ? "border-blue-400 bg-gradient-to-br from-blue-50/50 to-white hover:border-blue-600 hover:shadow-xl"
+                        : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-lg"
+                    } ${f.highlight ? "md:scale-110 z-10" : ""}`}
+                  >
+                    {f.highlight && (
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
+                        className="absolute -top-3 md:-top-4 bg-blue-600 text-white text-[9px] md:text-xs font-bold px-2 md:px-4 py-1 md:py-1.5 rounded-full shadow-md whitespace-nowrap"
+                      >
+                        ⭐ Populaire
+                      </motion.span>
+                    )}
+                    {selectedFormula === f.id && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="absolute top-2 right-2 w-5 h-5 md:top-3 md:right-3 md:w-6 md:h-6 bg-blue-600 rounded-full flex items-center justify-center"
+                      >
+                        <Check className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                      </motion.div>
+                    )}
+                    <h4 className="text-sm md:text-2xl font-bold text-gray-900 mb-1 md:mb-2">{f.label}</h4>
+                    <p className="text-blue-700 font-extrabold text-base md:text-3xl mb-0 md:mb-6">{f.price}</p>
+                    {/* Features : visibles uniquement sur desktop */}
+                    <ul className="hidden md:flex flex-col space-y-3 text-sm text-gray-700 text-left w-full mt-6">
+                      {f.features.map((feat) => (
+                        <li key={feat} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3 – Calendar */}
+          {step === 2 && formula && (
+            <motion.div
+              key="calendar"
+              variants={stepVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              {/* Selection summary chips */}
+              <div className="flex items-center justify-center gap-2 md:gap-3 mb-4 md:mb-8 flex-wrap">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 md:gap-2">
+                  <span className="text-base md:text-xl">{vehicle?.emoji}</span>
+                  <span className="font-semibold text-blue-800 text-xs md:text-sm">
+                    {vehicle?.label}
+                  </span>
+                </div>
+                <ChevronRight className="w-3 h-3 md:w-4 md:h-4 text-gray-400" />
+                <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-1.5 md:gap-2">
+                  <span className="font-semibold text-blue-800 text-xs md:text-sm">
+                    {formula.label}
+                  </span>
+                  <span className="text-blue-600 font-bold text-xs md:text-sm">
+                    {formula.price}
+                  </span>
+                </div>
+              </div>
+
+              <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-3 md:mb-6 text-center">
+                Choisissez votre créneau
+              </h3>
+
+              <div className="w-full rounded-3xl overflow-hidden border border-gray-200 shadow-xl bg-white">
+                <CalEmbed key={formula.id} formula={formula} />
+              </div>
+            </motion.div>
+          )}
+
+        </AnimatePresence>
+
+        {/* Navigation buttons */}
+        <div className="flex justify-between items-center mt-4 md:mt-8">
+          <motion.button
+            type="button"
+            onClick={handleBack}
+            whileHover={step > 0 ? { x: -3 } : {}}
+            className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all ${
+              step === 0
+                ? "invisible pointer-events-none"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+            Retour
+          </motion.button>
+
+          {step < 2 && (
+            <motion.button
+              type="button"
+              onClick={handleNext}
+              disabled={!canAdvance}
+              whileHover={canAdvance ? { x: 3 } : {}}
+              whileTap={canAdvance ? { scale: 0.97 } : {}}
+              className={`flex items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2 md:py-3 rounded-xl font-semibold text-sm md:text-base transition-all shadow-md ${
+                canAdvance
+                  ? "bg-gradient-to-r from-[#010D50] to-[#0328EE] text-white hover:shadow-xl hover:brightness-110"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Suivant
+              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+            </motion.button>
+          )}
         </div>
       </div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.6 }}
-        transition={{ delay: 0.5 }}
-        className="text-gray-500 text-sm mt-12 text-center max-w-2xl"
-      >
-        * Tarifs indicatifs selon la taille et l’état du véhicule. Devis
-        personnalisé disponible sur demande.
-      </motion.p>
     </section>
   );
 }

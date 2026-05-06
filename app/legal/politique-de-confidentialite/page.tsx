@@ -16,14 +16,14 @@ export default function PolitiqueDeConfidentialitePage() {
 
           <div className="hidden sm:flex items-center gap-2">
             <Link
-              href="/mentions-legales"
+              href="/legal/mentions-legales"
               className="text-sm font-semibold text-gray-600 hover:text-blue-700 hover:underline"
             >
               Mentions légales
             </Link>
             <span className="text-gray-300">•</span>
             <Link
-              href="/cgv"
+              href="/legal/cgv"
               className="text-sm font-semibold text-gray-600 hover:text-blue-700 hover:underline"
             >
               CGV

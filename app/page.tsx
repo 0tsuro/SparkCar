@@ -112,7 +112,7 @@ export default function Page() {
     () => [
       { href: "#accueil", label: "Accueil" },
       { href: "#services", label: "Services" },
-      { href: "#nosformules", label: "Formules" },
+      { href: "#nosformules", label: "Réserver" },
       { href: "#a-propos", label: "À propos" },
       { href: "#contact", label: "Contact" },
     ],
@@ -426,7 +426,7 @@ export default function Page() {
       {/* Pricing */}
       <section id="nosformules">
         <PricingSection />
-        <h2 className="sr-only">Formules et tarifs</h2>
+        <h2 className="sr-only">Réservation en ligne</h2>
       </section>
 
       {/* About */}

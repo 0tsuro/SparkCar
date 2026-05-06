@@ -42,7 +42,7 @@ export const Slider = () => {
       before: "/cleanporsche1.avif",
       after: "/cleanporsche2.avif",
       title: "Porsche 987",
-      formula: "Formule Extérieur",
+      formula: "Formule Extérieure",
       details: [
         "Prélavage à la mousse active",
         "Lavage manuel de la carrosserie",
@@ -53,7 +53,7 @@ export const Slider = () => {
       before: "/cleancoffre1.avif",
       after: "/cleancoffre2.avif",
       title: "Mercedes GLC",
-      formula: "Formule Deluxe",
+      formula: "Formule Premium",
       details: [
         "Désinfection des surfaces à la vapeur",
         "Shampoing intégral des sièges et tissus",
