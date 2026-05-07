@@ -10,25 +10,18 @@ const VEHICLES = [
   { id: "berline", label: "Berline / Compacte", emoji: "🚗", desc: "308, Golf, A3..." },
   { id: "suv", label: "SUV / Break", emoji: "🛻", desc: "3008, Tiguan..." },
   { id: "mono5", label: "Mono 5 places", emoji: "🚐", desc: "C4 Picasso..." },
-  { id: "mono7", label: "Mono 7 places", emoji: "🚌", desc: "Grand Picasso..." },
 ];
 
-// Prix en € : vehicleId → "exterieur"|"interieur" → [express, approfondi, premium]
+// Prix en € : vehicleId → washType → [express/classique, approfondi/premium, premium/prestige]
 const PRICES: Record<string, Record<string, [number, number, number]>> = {
-  citadine: { exterieur: [49, 69, 89],   interieur: [59, 79, 119]  },
-  berline:  { exterieur: [59, 79, 99],   interieur: [69, 89, 129]  },
-  suv:      { exterieur: [64, 84, 109],  interieur: [79, 99, 149]  },
-  mono5:    { exterieur: [69, 89, 119],  interieur: [89, 119, 169] },
-  mono7:    { exterieur: [74, 99, 129],  interieur: [99, 139, 199] },
+  citadine: { exterieur: [49, 69, 89],   interieur: [59, 79, 119],  "exterieur-interieur": [108, 148, 208] },
+  berline:  { exterieur: [59, 79, 99],   interieur: [69, 89, 129],  "exterieur-interieur": [128, 168, 228] },
+  suv:      { exterieur: [64, 84, 109],  interieur: [79, 99, 149],  "exterieur-interieur": [143, 183, 258] },
+  mono5:    { exterieur: [69, 89, 119],  interieur: [89, 119, 169], "exterieur-interieur": [158, 208, 288] },
 };
 
 function getPrice(vehicleId: string | null, washType: string | null, formulaIndex: number): number | null {
-  if (!vehicleId || !washType) return null;
-  if (washType === "exterieur-interieur") {
-    const ext = PRICES[vehicleId]?.exterieur?.[formulaIndex];
-    const int = PRICES[vehicleId]?.interieur?.[formulaIndex];
-    return ext != null && int != null ? ext + int : null;
-  }
+  if (!vehicleId || !washType || formulaIndex < 0) return null;
   return PRICES[vehicleId]?.[washType]?.[formulaIndex] ?? null;
 }
 
