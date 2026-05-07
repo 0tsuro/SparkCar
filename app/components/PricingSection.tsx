@@ -282,7 +282,7 @@ export default function PricingSection() {
               <h3 className="text-lg md:text-2xl font-bold text-gray-800 mb-4 md:mb-8 text-center">
                 Quel est votre véhicule ?
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-4 mb-4 md:mb-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-10">
                 {VEHICLES.map((v) => (
                   <motion.button
                     key={v.id}
